@@ -1,7 +1,7 @@
 """
-The aim of this script is to perform a deployment of the bcbb-nextgen pipeline into a fresh virtual machine.
-It creates a new VM using vagrant and then uses it to pull the full cloudbiolinux (a pipeline requirement) and
-the full pipeline, installs them and run the testsuite
+The aim of this script is to perform a deployment of the bcbb-nextgen pipeline within a fresh virtual machine.
+It creates a new VM using vagrant and then uses it to pull and install the cloudbiolinux requirements and
+the full pipeline. Then performs the tests.
 """
 
 import os
@@ -10,12 +10,12 @@ import os
 #TODO: Error handling with fabric, you can just warn or ask instead of abort...
 
 
-def clone_biolinux():
+def install_cloudbiolinux():
     """Function that clones cloudbiolinux from gitHub and installs it on a VM"""
 
 
 def install_VM():
-    """Download, init and up a vagrant VM"""
+    """Download, init, provide and up a vagrant VM"""
 
 
 ## Main script
@@ -26,4 +26,3 @@ except OSError, e:
     raise
 
 os.chdir('testingNextgen')
-os.mkdir('test2')
