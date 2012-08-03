@@ -13,6 +13,7 @@ Most of the software and dependencies needed by the pipeline are automatically d
 
 ## Running the tests
 To run the automatic deployment you just have to type:
+
             fab -f run_testsVM -p vagrant deploy
 
 
