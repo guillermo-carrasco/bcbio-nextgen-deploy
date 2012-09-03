@@ -2,8 +2,8 @@
 
 """
 The aim of this script is to perform a deployment of the bcbb-nextgen pipeline within a fresh virtual machine.
-It creates a new VM using vagrant and then uses it to pull and install the cloudbiolinux requirements and
-the full pipeline. Then performs the tests.
+It creates a new VM using vagrant and then uses it to pull and install the pipeline and its requirements.
+Then performs the tests.
 """
 
 from __future__ import with_statement
