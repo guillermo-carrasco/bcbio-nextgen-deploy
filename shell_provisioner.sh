@@ -7,6 +7,7 @@
 set -e # Exit script immediately on first error.
 
 # Install python-software-properties and add necessary repositories
+apt-get update
 apt-get install -y python-software-properties
 add-apt-repository -y ppa:scilifelab/scilifelab
 add-apt-repository -y ppa:debian-med/ppa
