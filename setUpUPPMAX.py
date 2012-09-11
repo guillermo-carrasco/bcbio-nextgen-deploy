@@ -48,7 +48,7 @@ def install():
 
     # 3.- Create a virtual environment "master" for the production pipeline
     log.info("Creating a virtual environment \"master\" for the production pipeline")
-    call('. ~/bashrc && \
+    call('. ~/.bashrc && \
           module unload python && \
           mkvirtualenv --python=/sw/comp/python/2.7_kalkyl/bin/python master', shell=True)
 
