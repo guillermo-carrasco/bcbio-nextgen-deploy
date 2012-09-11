@@ -48,9 +48,9 @@ def install():
 
     # 3.- Create a virtual environment "master" for the production pipeline
     log.info("Creating a virtual environment \"master\" for the production pipeline")
-    call('. ~/opt/mypython/bin/virtualenvwrapper.sh && \
-            module unload python && \
-            mkvirtualenv --python=/sw/comp/python/2.7_kalkyl/bin/python master', shell=True)
+    call('. ~/bashrc && \
+          module unload python && \
+          mkvirtualenv --python=/sw/comp/python/2.7_kalkyl/bin/python master', shell=True)
 
     # 4.- In order to force the system to use our own python binary instead of
     #     the system's, add the following lines to ~/.virtualenv/postactivate:
