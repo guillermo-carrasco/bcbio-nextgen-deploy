@@ -88,28 +88,15 @@ def purge():
         if l not in bashLines:
             b.write(l)
     b.close()
-
-    log.info('Removing opt/* directory...')
-    shutil.rmtree(os.path.join(os.environ['HOME'], 'opt'))
-
+    
     log.info("Removing created virtualenv...")
-    call('rmvirtualenv master', shell=True)
+    call('. ~/opt/mypython/bin/virtualenvwrapper.sh && \
+          rmvirtualenv master', shell=True)
 
-    log.info("Uninstalling virtualenvwrapper...")
-    call('pip uninstall virtualenvwrapper', shell=True)
-
-    log.info("Cleaning .virtualenv/postactivate...")
-    p = open(os.path.join(os.environ['HOME'], '.virtualenv/postactivate'), 'r')
-    postactive = p.readlines()
-    p.close()
-    f = open('virtualenvLines', 'r')
-    virtualenvLines = f.readlines()
-    f.close()
-    p = open(os.path.join(os.environ['HOME'], '.virtualenv/postactivate'), 'w')
-    for l in virtualenvLines:
-        if l not in postactive:
-            p.write(l)
-    p.close()
+    log.info('Removing opt/* and virtualenvs directories...')
+    shutil.rmtree(os.path.join(os.environ['HOME'], 'opt'))
+    shutil.rmtree(os.path.join(os.environ['HOME'], '.virtualenv'))
+    shutil.rmtree(os.path.join(os.environ['HOME'], '.virtualenvs'))
 
 
 def test():
