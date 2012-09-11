@@ -16,7 +16,7 @@ def install():
         6.- Run the test suite
         7.- Start the bcbb client
     """
-    log = logging.getLogger("UPLogger")    
+    log = logging.getLogger("UPLogger")
 
     ################################
     # Setting up virtualenvwrapper #
@@ -25,16 +25,16 @@ def install():
     # 1.- Modify .bahrc
     log.info("SETTING UP VIRTUALENVWRAPPER")
     log.info("Editing .bashrc...")
-    bashrc = open(os.path.join(os.environ['HOME'],'.bashrc'), 'a')
+    bashrc = open(os.path.join(os.environ['HOME'], '.bashrc'), 'a')
     f = open('bashLines', 'r')
     for l in f.readlines():
-	bashrc.write(l)
+        bashrc.write(l)
     f.close()
     bashrc.close()
 
     #Add to the current environment the variables added to .bashrc (like doing a source .bashrc)
-    os.environ['PATH'] = ':'.join([os.environ['PATH'], os.path.join(os.environ['HOME'],'opt/mypython/bin')])
-    os.environ['PYTHONPATH'] = os.path.join(os.environ['HOME'],'opt/mypython/lib/python2.6/site-packages')
+    os.environ['PATH'] = ':'.join([os.environ['PATH'], os.path.join(os.environ['HOME'], 'opt/mypython/bin')])
+    os.environ['PYTHONPATH'] = os.path.join(os.environ['HOME'], 'opt/mypython/lib/python2.6/site-packages')
     # source ~/opt/mypython/bin/virtualenvwrapper.sh ??
     os.environ['WORKON_HOME'] = os.path.join(os.environ['HOME'], '.virtualenvs')
 
@@ -52,15 +52,14 @@ def install():
     # 4.- In order to force the system to use our own python binary instead of
     #     the system's, add the following lines to ~/.virtualenv/postactivate:
     log.info("Editing ~/.virtualenv/postactivate...")
-    if not os.path.exists(os.path.join(os.environ['HOME'],'.virtualenv')):
-        os.makedirs(os.path.join(os.environ['HOME'],'.virtualenv'))
-    p = open(os.path.join(os.environ['HOME'],'.virtualenv/postactivate'), 'a+')
+    if not os.path.exists(os.path.join(os.environ['HOME'], '.virtualenv')):
+        os.makedirs(os.path.join(os.environ['HOME'], '.virtualenv'))
+    p = open(os.path.join(os.environ['HOME'], '.virtualenv/postactivate'), 'a+')
     f = open('virtualenvLines', 'r')
     for l in f.readlines():
         p.write(l)
     f.close()
     p.close()
-    
 
 
 def purge():
@@ -71,13 +70,13 @@ def purge():
 
     # Edit the ~/.bashrc configuration file
     log.info('Cleaning .bashrc...')
-    b = open(os.path.join(os.environ['HOME'],'.bashrc'), 'r')
+    b = open(os.path.join(os.environ['HOME'], '.bashrc'), 'r')
     bashrc = b.readlines()
     b.close()
     f = open('bashLines', 'r')
     bashLines = f.readlines()
     f.close()
-    b = open(os.path.join(os.environ['HOME'],'.bashrc'), 'w')
+    b = open(os.path.join(os.environ['HOME'], '.bashrc'), 'w')
     for l in bashrc:
         if l not in bashLines:
             b.write(l)
@@ -93,13 +92,13 @@ def purge():
     call('pip uninstall virtualenvwrapper', shell=True)
 
     log.info("Cleaning .virtualenv/postactivate...")
-    p = open(os.path.join(os.environ['HOME'],'.virtualenv/postactivate'), 'r')
+    p = open(os.path.join(os.environ['HOME'], '.virtualenv/postactivate'), 'r')
     postactive = p.readlines()
     p.close()
     f = open('virtualenvLines', 'r')
     virtualenvLines = f.readlines()
     f.close()
-    p = open(os.path.join(os.environ['HOME'],'.virtualenv/postactivate'), 'w')
+    p = open(os.path.join(os.environ['HOME'], '.virtualenv/postactivate'), 'w')
     for l in virtualenvLines:
         if l not in postactive:
             p.write(l)
@@ -126,7 +125,7 @@ if __name__ == '__main__':
         sys.exit('ERROR: Unknown action ' + '\'' + sys.argv[1] + '\'')
 
     #Prepare the logger (writting to a file and to stdout)
-    logger = logging.getLogger("UPLogger")    
+    logger = logging.getLogger("UPLogger")
     logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     h1 = logging.StreamHandler()
