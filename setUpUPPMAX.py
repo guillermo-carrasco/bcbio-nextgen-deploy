@@ -22,7 +22,7 @@ def install(env):
     #Modify .bahrc
     log.info("SETTING UP VIRTUALENVWRAPPER")
     log.info("Editing .bashrc...")
-    bashrc = open(pjoin(os.environ['HOME'], '.bashrc'), 'a')
+    bashrc = open(pjoin(env['HOME'], '.bashrc'), 'a')
     f = open('bashLines', 'r')
     for l in f.readlines():
         bashrc.write(l)
@@ -31,21 +31,21 @@ def install(env):
 
 
     #Install virtualenvwrapper and create a virtual environment "master" for the production pipeline
-    install_and_create_virtualenv ="""
+    install_and_create_virtualenv ='''
         easy_install --prefix=~/opt/mypython pip &&
         pip install virtualenvwrapper --install-option="--prefix=~/opt/mypython" &&
         . ~/.bashrc &&
         module unload python &&
         mkvirtualenv --python=/sw/comp/python/2.7_kalkyl/bin/python master
-        """
+        '''
 
     log.info("Installing virtualenvwrapper and creating a virtual environment \"master\" for the production pipeline...")
-    os.makedirs(pjoin(os.environ['HOME'], 'opt/mypython/lib/python2.6/site-packages'))
+    os.makedirs(pjoin(env['HOME'], 'opt/mypython/lib/python2.6/site-packages'))
     call(install_and_create_virtualenv, shell=True, env=env)
 
     #Modify ~/.virtualenvs/postactivate...
     log.info("Editing ~/.virtualenvs/postactivate...")
-    p = open(pjoin(os.environ['HOME'], '.virtualenvs/postactivate'), 'a')
+    p = open(pjoin(env['HOME'], '.virtualenvs/postactivate'), 'a')
     f = open('virtualenvLines', 'r')
     for l in f.readlines():
         p.write(l)
@@ -65,13 +65,13 @@ def purge(env):
 
     # Edit the ~/.bashrc configuration file
     log.info('Cleaning .bashrc...')
-    b = open(pjoin(os.environ['HOME'], '.bashrc'), 'r')
+    b = open(pjoin(env['HOME'], '.bashrc'), 'r')
     bashrc = b.readlines()
     b.close()
     f = open('bashLines', 'r')
     bashLines = f.readlines()
     f.close()
-    b = open(pjoin(os.environ['HOME'], '.bashrc'), 'w')
+    b = open(pjoin(env['HOME'], '.bashrc'), 'w')
     for l in bashrc:
         if l not in bashLines:
             b.write(l)
