@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os
+from os.path import join as pjoin
 import shutil
 import sys
 from subprocess import call
@@ -9,55 +10,47 @@ import logging
 
 def install():
     """
-    This function installs and set up properly the pipeline in UPPMAX. It performs several steps:
-        1.- Install the virtualenvwrapper scripts
-        2.- Setup the config repository
-        3.- Setup the custom module specifications
-        4.- Setup the bcbb pipeline code
-        5.- Setup the SciLifeLab utility scripts
-        6.- Run the test suite
-        7.- Start the bcbb client
+    Installs and set up properly the pipeline in UPPMAX creating a virtualenv.
     """
+    
     log = logging.getLogger("UPLogger")
+
+    #Work with a copy of the current environment and tune it
+    env = dict(os.environ)
+    env['PATH'] = ':'.join([env['PATH'], pjoin(env['HOME'], 'opt/mypython/bin')])
+    env['PYTHONPATH'] = pjoin(env['HOME'], 'opt/mypython/lib/python2.6/site-packages')
+
 
     ################################
     # Setting up virtualenvwrapper #
     ################################
 
-    # 1.- Modify .bahrc
+    #Modify .bahrc
     log.info("SETTING UP VIRTUALENVWRAPPER")
     log.info("Editing .bashrc...")
-    bashrc = open(os.path.join(os.environ['HOME'], '.bashrc'), 'a')
+    bashrc = open(pjoin(os.environ['HOME'], '.bashrc'), 'a')
     f = open('bashLines', 'r')
     for l in f.readlines():
         bashrc.write(l)
     f.close()
     bashrc.close()
 
-    #Add to the current environment the variables added to .bashrc (like doing a source .bashrc)
-    os.environ['PATH'] = ':'.join([os.environ['PATH'], os.path.join(os.environ['HOME'], 'opt/mypython/bin')])
-    os.environ['PYTHONPATH'] = os.path.join(os.environ['HOME'], 'opt/mypython/lib/python2.6/site-packages')
-    # source ~/opt/mypython/bin/virtualenvwrapper.sh ??
-    os.environ['WORKON_HOME'] = os.path.join(os.environ['HOME'], '.virtualenvs')
 
-    # 2.- Install virtualenvwrapper
-    log.info("Installing virtualenvwrapper...")
-    os.makedirs(os.path.join(os.environ['HOME'], 'opt/mypython/lib/python2.6/site-packages'))
-    call('easy_install --prefix=~/opt/mypython pip', shell=True)
-    call('pip install virtualenvwrapper --install-option=\"--prefix=~/opt/mypython\"', shell=True)
+    #Install virtualenvwrapper and create a virtual environment "master" for the production pipeline
+    install_and_create_virtualenv = ' \
+        easy_install --prefix=~/opt/mypython pip &&\
+        pip install virtualenvwrapper --install-option=\"--prefix=~/opt/mypython\" &&\
+        . ~/.bashrc && \
+        module unload python && \
+        mkvirtualenv --python=/sw/comp/python/2.7_kalkyl/bin/python master'
 
-    # 3.- Create a virtual environment "master" for the production pipeline
-    log.info("Creating a virtual environment \"master\" for the production pipeline")
-    call('. ~/.bashrc && \
-          module unload python && \
-          mkvirtualenv --python=/sw/comp/python/2.7_kalkyl/bin/python master', shell=True)
+    log.info("Installing virtualenvwrapper and creating a virtual environment \"master\" for the production pipeline...")
+    os.makedirs(pjoin(os.environ['HOME'], 'opt/mypython/lib/python2.6/site-packages'))
+    call(install_and_create_virtualenv, shell=True, env=env)
 
-    # 4.- In order to force the system to use our own python binary instead of
-    #     the system's, add the following lines to ~/.virtualenv/postactivate:
-    log.info("Editing ~/.virtualenv/postactivate...")
-    if not os.path.exists(os.path.join(os.environ['HOME'], '.virtualenv')):
-        os.makedirs(os.path.join(os.environ['HOME'], '.virtualenv'))
-    p = open(os.path.join(os.environ['HOME'], '.virtualenv/postactivate'), 'a+')
+    #Modify ~/.virtualenvs/postactivate...
+    log.info("Editing ~/.virtualenvs/postactivate...")
+    p = open(pjoin(os.environ['HOME'], '.virtualenvs/postactivate'), 'a')
     f = open('virtualenvLines', 'r')
     for l in f.readlines():
         p.write(l)
@@ -77,13 +70,13 @@ def purge():
 
     # Edit the ~/.bashrc configuration file
     log.info('Cleaning .bashrc...')
-    b = open(os.path.join(os.environ['HOME'], '.bashrc'), 'r')
+    b = open(pjoin(os.environ['HOME'], '.bashrc'), 'r')
     bashrc = b.readlines()
     b.close()
     f = open('bashLines', 'r')
     bashLines = f.readlines()
     f.close()
-    b = open(os.path.join(os.environ['HOME'], '.bashrc'), 'w')
+    b = open(pjoin(os.environ['HOME'], '.bashrc'), 'w')
     for l in bashrc:
         if l not in bashLines:
             b.write(l)
@@ -91,12 +84,11 @@ def purge():
     
     log.info("Removing created virtualenv...")
     call('. ~/opt/mypython/bin/virtualenvwrapper.sh && \
-          rmvirtualenv master', shell=True)
+          rmvirtualenv master', shell=True, env=env)
 
-    log.info('Removing opt/* and virtualenvs directories...')
-    shutil.rmtree(os.path.join(os.environ['HOME'], 'opt'))
-    shutil.rmtree(os.path.join(os.environ['HOME'], '.virtualenv'))
-    shutil.rmtree(os.path.join(os.environ['HOME'], '.virtualenvs'))
+    log.info('Removing ~/opt and virtualenvs directories...')
+    shutil.rmtree(pjoin(env['HOME'], 'opt'))
+    shutil.rmtree(pjoin(env['HOME'], '.virtualenvs'))
 
 
 def test():
@@ -108,9 +100,9 @@ if __name__ == '__main__':
 
     #Parse the funcion
     function_map = {
-    'install': install,
-    'purge': purge,
-    'test': test,
+        'install': install,
+        'purge': purge,
+        'test': test,
     }
 
     try:
