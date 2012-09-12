@@ -8,18 +8,12 @@ from subprocess import call
 import logging
 
 
-def install():
+def install(env):
     """
     Installs and set up properly the pipeline in UPPMAX creating a virtualenv.
     """
-    
+
     log = logging.getLogger("UPLogger")
-
-    #Work with a copy of the current environment and tune it
-    env = dict(os.environ)
-    env['PATH'] = ':'.join([env['PATH'], pjoin(env['HOME'], 'opt/mypython/bin')])
-    env['PYTHONPATH'] = pjoin(env['HOME'], 'opt/mypython/lib/python2.6/site-packages')
-
 
     ################################
     # Setting up virtualenvwrapper #
@@ -37,12 +31,13 @@ def install():
 
 
     #Install virtualenvwrapper and create a virtual environment "master" for the production pipeline
-    install_and_create_virtualenv = ' \
-        easy_install --prefix=~/opt/mypython pip &&\
-        pip install virtualenvwrapper --install-option=\"--prefix=~/opt/mypython\" &&\
-        . ~/.bashrc && \
-        module unload python && \
-        mkvirtualenv --python=/sw/comp/python/2.7_kalkyl/bin/python master'
+    install_and_create_virtualenv ="""
+        easy_install --prefix=~/opt/mypython pip &&
+        pip install virtualenvwrapper --install-option="--prefix=~/opt/mypython" &&
+        . ~/.bashrc &&
+        module unload python &&
+        mkvirtualenv --python=/sw/comp/python/2.7_kalkyl/bin/python master
+        """
 
     log.info("Installing virtualenvwrapper and creating a virtual environment \"master\" for the production pipeline...")
     os.makedirs(pjoin(os.environ['HOME'], 'opt/mypython/lib/python2.6/site-packages'))
@@ -62,7 +57,7 @@ def install():
     ###############################
 
 
-def purge():
+def purge(env):
     """
     Purge the installation of the pipeline in UPPMAX.
     """
@@ -91,12 +86,17 @@ def purge():
     shutil.rmtree(pjoin(env['HOME'], '.virtualenvs'))
 
 
-def test():
+def test(env):
     log = logging.getLogger("UPLogger")
     log.info('The test works properly')
 
 
 if __name__ == '__main__':
+
+    #Work with a copy of the current environment and tune it
+    env = dict(os.environ)
+    env['PATH'] = ':'.join([env['PATH'], pjoin(env['HOME'], 'opt/mypython/bin')])
+    env['PYTHONPATH'] = pjoin(env['HOME'], 'opt/mypython/lib/python2.6/site-packages')
 
     #Parse the funcion
     function_map = {
@@ -122,4 +122,4 @@ if __name__ == '__main__':
     logger.addHandler(h2)
 
     #Call the function
-    function()
+    function(env)
