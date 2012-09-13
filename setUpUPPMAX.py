@@ -111,16 +111,31 @@ def install(env):
     ##########################################
     log.info("SETTING UP SCILIFELAB UTILITY SCRIPTS")
     log.info("Downloading and installing scilifelab scripts...")
-    if os.path.esists('scilifelab'):
+    if os.path.exists('scilifelab'):
         shutil.rmtree('scilifelab')
     download_and_install_scripts = """
         git clone http://github.com/SciLifeLab/scilifelab.git scilifelab &&
         cd scilifelab && git checkout master &&
-        . ~/.bashrc
-        workon master
+        . ~/.bashrc &&
+        workon master &&
         python setup.py install
         """
     check_call(download_and_install_scripts, shell=True, env=env)
+
+    ######################
+    # Running test suite #
+    ######################
+    log.info("RUNNING TEST SUITE")
+    log.info("Preparing testsuite...")
+    os.chdir(pjoin(bcbb_dir, 'nextgen/tests/data/automated'))
+    os.symlink(pjoin(config_dir, 'tests/data/automated/post_process.yaml'), 'post_process.yaml')
+    run_tests = """
+        . ~/.bashrc &&
+        workon master &&
+        sbatch ~/opt/scilifelab/batch/nosetests_run.sh
+        """
+    log.info("Running test suite...")
+    check_call(run_tests, shell=True, env=env)
 
 
 def purge(env):
