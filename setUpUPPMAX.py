@@ -4,7 +4,7 @@ import os
 from os.path import join as pjoin
 import shutil
 import sys
-from subprocess import call
+from subprocess import check_call
 import logging
 
 
@@ -41,7 +41,7 @@ def install(env):
 
     log.info("Installing virtualenvwrapper and creating a virtual environment \"master\" for the production pipeline...")
     os.makedirs(pjoin(env['HOME'], 'opt/mypython/lib/python2.6/site-packages'))
-    call(install_and_create_virtualenv, shell=True, env=env)
+    check_call(install_and_create_virtualenv, shell=True, env=env)
 
     #Modify ~/.virtualenvs/postactivate...
     log.info("Editing ~/.virtualenvs/postactivate...")
@@ -52,9 +52,17 @@ def install(env):
     f.close()
     p.close()
 
+
     ###############################
     # Setting up config directory #
     ###############################
+    log.info("SETTING UP CONFIG REPOSITORY")
+    log.info("Removing any previous versions of config repository...")
+    if os.path.exists(pjoin(env['HOME'], 'opt/config')):
+        shutil.rmtree(pjoin(env['HOME'], 'opt/config'))
+    os.chdir(pjoin(env['HOME'], 'opt'))
+    log.info("Cloning config repository...")
+    check_call('git clone git@code.scilifelab.se:bcbb_config config', shell=True, env=env)
 
 
 def purge(env):
@@ -78,7 +86,7 @@ def purge(env):
     b.close()
     
     log.info("Removing created virtualenv...")
-    call('. ~/opt/mypython/bin/virtualenvwrapper.sh && \
+    check_call('. ~/opt/mypython/bin/virtualenvwrapper.sh && \
           rmvirtualenv master', shell=True, env=env)
 
     log.info('Removing ~/opt and virtualenvs directories...')
@@ -121,5 +129,5 @@ if __name__ == '__main__':
     logger.addHandler(h1)
     logger.addHandler(h2)
 
-    #Call the function
+    #check_call the function
     function(env)
