@@ -10,10 +10,15 @@ import logging
 
 def install(env):
     """
-    Installs and set up properly the pipeline in UPPMAX creating a virtualenv.
+    Installs and set up properly the bcbio-nextgen pipeline in UPPMAX.
     """
 
     log = logging.getLogger("UPLogger")
+    #Common dirs
+    opt_dir = pjoin(env['HOME'], 'opt')
+    modules_dir = pjoin(env['HOME'], 'opt/modules')
+    config_dir = pjoin(env['HOME'], 'opt/config')
+    bcbb_dir = pjoin(env['HOME'], 'opt/bcbb')
 
     ################################
     # Setting up virtualenvwrapper #
@@ -28,7 +33,6 @@ def install(env):
         bashrc.write(l)
     f.close()
     bashrc.close()
-
 
     #Install virtualenvwrapper and create a virtual environment "master" for the production pipeline
     install_and_create_virtualenv ='''
@@ -52,16 +56,13 @@ def install(env):
     f.close()
     p.close()
 
-
     ###############################
     # Setting up config directory #
     ###############################
     log.info("SETTING UP CONFIG REPOSITORY")
-    log.info("Removing any previous versions of config repository...")
-    config_dir = pjoin(env['HOME'], 'opt/config')
     if os.path.exists(config_dir):
         shutil.rmtree(config_dir)
-    os.chdir(pjoin(env['HOME'], 'opt'))
+    os.chdir(opt_dir)
     log.info("Cloning config repository...")
     check_call('git clone git@code.scilifelab.se:bcbb_config config', shell=True, env=env)
     os.chmod('config', 0700)
@@ -76,14 +77,50 @@ def install(env):
     #############################
     # Setting up custom modules #
     #############################
-    os.chdir(pjoin(env['HOME'], 'opt'))
-    modules_dir = pjoin(env['HOME'], 'modules')
+    log.info("SETTING UP CUSTOM MODULES")
+    os.chdir(opt_dir)
     if os.path.exists(modules_dir):
         shutil.rmtree(modules_dir)
-    check_call('git clone git://github.com/SciLifeLab/modules.sf.net.git modules', shell=True, env=env)
-    os.chdir('modules')
+    check_call('git clone http://github.com/SciLifeLab/modules.sf.net.git modules', shell=True, env=env)
+    os.chdir(modules_dir)
     check_call('git checkout master', shell=True, env=env)
     
+    #################################
+    # Setting up bcbb pipeline code #
+    #################################
+    log.info("SETTING UP BCBB PIPELINE CODE")
+    log.info("Downloading pipeline code and checking out master branches...")
+    os.chdir(opt_dir)
+    if os.path.exists(bcbb_dir):
+        shutil.rmtree(bcbb_dir)
+    check_call('git clone --recursive http://github.com/SciLifeLab/bcbb.git bcbb', shell=True, env=env)
+    check_call('cd bcbb && git checkout master && cd nextgen/bcbio/scilifelab && git checkout master', shell=True, env=env)
+
+    log.info("Installing the pipeline...")
+    install_code_in_production = """
+        . ~/.bashrc &&
+        cd ~/opt/bcbb/nextgen &&
+        workon master &&
+        pip install numpy &&
+        python setup.py install
+        """
+    check_call(install_code_in_production, shell=True, env=env)
+    
+    ##########################################
+    # Setting up scilifelab utility scriipts #
+    ##########################################
+    log.info("SETTING UP SCILIFELAB UTILITY SCRIPTS")
+    log.info("Downloading and installing scilifelab scripts...")
+    if os.path.esists('scilifelab'):
+        shutil.rmtree('scilifelab')
+    download_and_install_scripts = """
+        git clone http://github.com/SciLifeLab/scilifelab.git scilifelab &&
+        cd scilifelab && git checkout master &&
+        . ~/.bashrc
+        workon master
+        python setup.py install
+        """
+    check_call(download_and_install_scripts, shell=True, env=env)
 
 
 def purge(env):
