@@ -4,3 +4,5 @@ export PATH=$PATH:~/opt/mypython/bin
 export PYTHONPATH=~/opt/mypython/lib/python2.6/site-packages
 source ~/opt/mypython/bin/virtualenvwrapper.sh
 export WORKON_HOME=~/.virtualenvs
+export MODULEPATH=${MODULEPATH}:~/opt/modules
+umask 007
