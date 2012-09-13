@@ -58,8 +58,9 @@ def install(env):
     ###############################
     log.info("SETTING UP CONFIG REPOSITORY")
     log.info("Removing any previous versions of config repository...")
-    if os.path.exists(pjoin(env['HOME'], 'opt/config')):
-        shutil.rmtree(pjoin(env['HOME'], 'opt/config'))
+    config_dir = pjoin(env['HOME'], 'opt/config')
+    if os.path.exists(config_dir):
+        shutil.rmtree(config_dir)
     os.chdir(pjoin(env['HOME'], 'opt'))
     log.info("Cloning config repository...")
     check_call('git clone git@code.scilifelab.se:bcbb_config config', shell=True, env=env)
@@ -71,6 +72,18 @@ def install(env):
     os.symlink('/bubo/nobackup/uppnex/reference/biodata/galaxy/tool-data', 'tool-data')
     log.info("Generate SHA digest and update...")
     check_call('git rev-parse --short --verify HEAD > ~/.config_version', shell=True, env=env)
+
+    #############################
+    # Setting up custom modules #
+    #############################
+    os.chdir(pjoin(env['HOME'], 'opt'))
+    modules_dir = pjoin(env['HOME'], 'modules')
+    if os.path.exists(modules_dir):
+        shutil.rmtree(modules_dir)
+    check_call('git clone git://github.com/SciLifeLab/modules.sf.net.git modules', shell=True, env=env)
+    os.chdir('modules')
+    check_call('git checkout master', shell=True, env=env)
+    
 
 
 def purge(env):
