@@ -63,6 +63,14 @@ def install(env):
     os.chdir(pjoin(env['HOME'], 'opt'))
     log.info("Cloning config repository...")
     check_call('git clone git@code.scilifelab.se:bcbb_config config', shell=True, env=env)
+    os.chmod('config', 0700)
+    log.info("Checking out biologin production branch...")
+    os.chdir('config')
+    check_call('git checkout biologin', shell=True, env=env)
+    log.info("Creating symlink to Galaxy\'s tool-data directory...")
+    os.symlink('/bubo/nobackup/uppnex/reference/biodata/galaxy/tool-data', 'tool-data')
+    log.info("Generate SHA digest and update...")
+    check_call('git rev-parse --short --verify HEAD > ~/.config_version', shell=True, env=env)
 
 
 def purge(env):
