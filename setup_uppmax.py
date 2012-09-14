@@ -132,7 +132,7 @@ def install(env):
     run_tests = """
         . ~/.bashrc &&
         workon master &&
-        sbatch ~/opt/scilifelab/batch/nosetests_run.sh
+        python ~/opt/bcbb/nextgen/tests/runtests_drmaa.py
         """
     log.info("Running test suite...")
     check_call(run_tests, shell=True, env=env)
@@ -160,11 +160,10 @@ def purge(env):
     
     log.info("Removing created virtualenv...")
     check_call('. ~/opt/mypython/bin/virtualenvwrapper.sh && \
-          rmvirtualenv master', shell=True, env=env)
+                rmvirtualenv master', shell=True, env=env)
 
-    log.info('Removing ~/opt and virtualenvs directories...')
+    log.info('Removing ~/opt directory...')
     shutil.rmtree(pjoin(env['HOME'], 'opt'))
-    shutil.rmtree(pjoin(env['HOME'], '.virtualenvs'))
 
 
 def test(env):
