@@ -28,7 +28,7 @@ def install(env):
     log.info("SETTING UP VIRTUALENVWRAPPER")
     log.info("Editing .bashrc...")
     bashrc = open(pjoin(env['HOME'], '.bashrc'), 'a')
-    f = open('bashLines', 'r')
+    f = open('bash_lines', 'r')
     for l in f.readlines():
         bashrc.write(l)
     f.close()
@@ -50,7 +50,7 @@ def install(env):
     #Modify ~/.virtualenvs/postactivate...
     log.info("Editing ~/.virtualenvs/postactivate...")
     p = open(pjoin(env['HOME'], '.virtualenvs/postactivate'), 'a')
-    f = open('virtualenvLines', 'r')
+    f = open('virtualenv_lines', 'r')
     for l in f.readlines():
         p.write(l)
     f.close()
@@ -149,12 +149,12 @@ def purge(env):
     b = open(pjoin(env['HOME'], '.bashrc'), 'r')
     bashrc = b.readlines()
     b.close()
-    f = open('bashLines', 'r')
-    bashLines = f.readlines()
+    f = open('bash_lines', 'r')
+    bash_lines = f.readlines()
     f.close()
     b = open(pjoin(env['HOME'], '.bashrc'), 'w')
     for l in bashrc:
-        if l not in bashLines:
+        if l not in bash_lines:
             b.write(l)
     b.close()
     
@@ -196,7 +196,7 @@ if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     h1 = logging.StreamHandler()
-    h2 = logging.FileHandler('setUpUPPMAX.log')
+    h2 = logging.FileHandler('setup_uppmax.log')
     h1.setFormatter(formatter)
     h2.setFormatter(formatter)
     logger.addHandler(h1)
