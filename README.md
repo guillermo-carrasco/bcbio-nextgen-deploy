@@ -13,7 +13,7 @@ All the software and dependencies needed by the pipeline are automatically downl
 * [Vagrant][o2] - To download and install the Virtual Machine
 * [Python fabric][o3] - To run the main script
 
-## Running the tests
+### Running the tests
 To run the automatic deployment you just have to type:
 
             fab -f run_tests_vm.py deploy
