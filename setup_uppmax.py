@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
 import os
-from os.path import join as pjoin
 import shutil
 import sys
-from subprocess import check_call
 import logging
+from os.path import join as pjoin
+from subprocess import check_call
 
 
 def install(env):
@@ -15,10 +15,11 @@ def install(env):
 
     log = logging.getLogger("UPLogger")
     #Common dirs
-    opt_dir = pjoin(env['HOME'], 'opt')
-    modules_dir = pjoin(env['HOME'], 'opt/modules')
-    config_dir = pjoin(env['HOME'], 'opt/config')
-    bcbb_dir = pjoin(env['HOME'], 'opt/bcbb')
+    home = env['HOME']
+    opt_dir = pjoin(home, 'opt')
+    modules_dir = pjoin(home, 'opt/modules')
+    config_dir = pjoin(home, 'opt/config')
+    bcbb_dir = pjoin(home, 'opt/bcbb')
 
     ################################
     # Setting up virtualenvwrapper #
@@ -27,7 +28,7 @@ def install(env):
     #Modify .bahrc
     log.info("SETTING UP VIRTUALENVWRAPPER")
     log.info("Editing .bashrc...")
-    bashrc = open(pjoin(env['HOME'], '.bashrc'), 'a')
+    bashrc = open(home, '.bashrc'), 'a')
     f = open('bash_lines', 'r')
     for l in f.readlines():
         bashrc.write(l)
@@ -44,12 +45,12 @@ def install(env):
         '''
 
     log.info("Installing virtualenvwrapper and creating a virtual environment \"master\" for the production pipeline...")
-    os.makedirs(pjoin(env['HOME'], 'opt/mypython/lib/python2.6/site-packages'))
+    os.makedirs(pjoin(home, 'opt/mypython/lib/python2.6/site-packages'))
     check_call(install_and_create_virtualenv, shell=True, env=env)
 
     #Modify ~/.virtualenvs/postactivate...
     log.info("Editing ~/.virtualenvs/postactivate...")
-    p = open(pjoin(env['HOME'], '.virtualenvs/postactivate'), 'a')
+    p = open(pjoin(home, '.virtualenvs/postactivate'), 'a')
     f = open('virtualenv_lines', 'r')
     for l in f.readlines():
         p.write(l)
@@ -128,7 +129,11 @@ def install(env):
     log.info("RUNNING TEST SUITE")
     log.info("Preparing testsuite...")
     os.chdir(pjoin(bcbb_dir, 'nextgen/tests/data/automated'))
-    os.symlink(pjoin(config_dir, 'tests/data/automated/post_process.yaml'), 'post_process.yaml')
+    shutil.copy(pjoin(config_dir, 'tests/data/automated/post_process.yaml'), 'post_process.yaml')
+    # Run the testsuite with reduced test data
+    sed_command = '''sed 's:galaxy_config\: $HOME/opt/config/universe_wsgi.ini:galaxy_config\: universe_wsgi.ini:' < post_process.yaml > _post_process.yaml'''
+    check_call(sed_command, shell=True)
+    shutil.move('_post_process.yaml','post_process.yaml')
     run_tests = """
         . ~/.bashrc &&
         workon master &&
@@ -142,17 +147,18 @@ def purge(env):
     """
     Purge the installation of the pipeline in UPPMAX.
     """
+    home = env['HOME']
     log = logging.getLogger("UPLogger")
 
     # Edit the ~/.bashrc configuration file
     log.info('Cleaning .bashrc...')
-    b = open(pjoin(env['HOME'], '.bashrc'), 'r')
+    b = open(pjoin(home, '.bashrc'), 'r')
     bashrc = b.readlines()
     b.close()
     f = open('bash_lines', 'r')
     bash_lines = f.readlines()
     f.close()
-    b = open(pjoin(env['HOME'], '.bashrc'), 'w')
+    b = open(pjoin(home, '.bashrc'), 'w')
     for l in bashrc:
         if l not in bash_lines:
             b.write(l)
@@ -162,8 +168,21 @@ def purge(env):
     check_call('. ~/opt/mypython/bin/virtualenvwrapper.sh && \
                 rmvirtualenv master', shell=True, env=env)
 
+    log.info("Cleaning .virtualenvs/postactivate...")
+    p = open(pjoin(home, '.virtualenvs/postactivate'), 'r')
+    postactive = p.readlines()
+    p.close()
+    f = open('virtualenvLines', 'r')
+    virtualenvLines = f.readlines()
+    f.close()
+    p = open(pjoin(home, '.virtualenv/postactivate'), 'w')
+    for l in virtualenvLines:
+        if l not in postactive:
+            p.write(l)
+    p.close()
+
     log.info('Removing ~/opt directory...')
-    shutil.rmtree(pjoin(env['HOME'], 'opt'))
+    shutil.rmtree(pjoin(home, 'opt'))
 
 
 def test(env):
