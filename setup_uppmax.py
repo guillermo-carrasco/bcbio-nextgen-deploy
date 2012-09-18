@@ -28,7 +28,7 @@ def install(env):
     #Modify .bahrc
     log.info("SETTING UP VIRTUALENVWRAPPER")
     log.info("Editing .bashrc...")
-    bashrc = open(home, '.bashrc'), 'a')
+    bashrc = open(pjoin(home, '.bashrc'), 'a')
     f = open('bash_lines', 'r')
     for l in f.readlines():
         bashrc.write(l)
@@ -172,10 +172,10 @@ def purge(env):
     p = open(pjoin(home, '.virtualenvs/postactivate'), 'r')
     postactive = p.readlines()
     p.close()
-    f = open('virtualenvLines', 'r')
+    f = open('virtualenv_lines', 'r')
     virtualenvLines = f.readlines()
     f.close()
-    p = open(pjoin(home, '.virtualenv/postactivate'), 'w')
+    p = open(pjoin(home, '.virtualenvs/postactivate'), 'w')
     for l in virtualenvLines:
         if l not in postactive:
             p.write(l)
