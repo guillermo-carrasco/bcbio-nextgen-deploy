@@ -20,7 +20,7 @@
         "#Set up umask so created files/directories are read/writeable by group", 
         "umask 007", 
         "#Set up python DRMAA module", 
-        "export DRMAA_LIBRARY_PATH=/bubo/home/h5/roman/dev/slurm-drmaa/trunk/slurm_drmaa/.libs/libdrmaa.so", 
+        "export DRMAA_LIBRARY_PATH=/bubo/sw/apps/build/slurm-drmaa/1.0.5/lib/libdrmaa.so", 
         "export DRMAA_PATH=$DRMAA_LIBRARY_PATH"
     ]
 }
