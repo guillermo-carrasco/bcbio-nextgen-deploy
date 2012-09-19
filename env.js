@@ -1,5 +1,5 @@
 {
-    "virtualenv": [
+    "postactivate": [
         "# We don't want UPPMAX's custom python", 
         "PATH=\"${PATH/'/sw/comp/python/2.6.6_kalkyl/bin'}\"", 
         "# We unset PYTHONHOME set by the module system,", 
@@ -9,7 +9,7 @@
         "# Make the modules load after activating a virtual environment", 
         "source ~/opt/config/modules"
     ], 
-    "bash": [
+    ".bash": [
         "# User specific aliases and functions", 
         "#Set up python and virtualenvenvironmen", 
         "export PATH=$PATH:~/opt/mypython/bin", 
