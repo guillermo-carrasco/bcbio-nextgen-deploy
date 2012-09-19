@@ -9,7 +9,7 @@
         "# Make the modules load after activating a virtual environment", 
         "source ~/opt/config/modules"
     ], 
-    ".bash": [
+    ".bashrc": [
         "# User specific aliases and functions", 
         "#Set up python and virtualenvenvironmen", 
         "export PATH=$PATH:~/opt/mypython/bin", 
