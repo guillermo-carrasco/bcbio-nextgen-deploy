@@ -4,11 +4,12 @@ import os
 import shutil
 import sys
 import logging
+import json
 from os.path import join as pjoin
 from subprocess import check_call
 
 
-def install(env):
+def install(env, config_lines):
     """
     Installs and set up properly the bcbio-nextgen pipeline in UPPMAX.
     """
@@ -29,10 +30,8 @@ def install(env):
     log.info("SETTING UP VIRTUALENVWRAPPER")
     log.info("Editing .bashrc...")
     bashrc = open(pjoin(home, '.bashrc'), 'a')
-    f = open('bash_lines', 'r')
-    for l in f.readlines():
-        bashrc.write(l)
-    f.close()
+    for l in config_lines['.bashrc']:
+        bashrc.write(l+'\n')
     bashrc.close()
 
     #Install virtualenvwrapper and create a virtual environment "master" for the production pipeline
@@ -51,10 +50,8 @@ def install(env):
     #Modify ~/.virtualenvs/postactivate...
     log.info("Editing ~/.virtualenvs/postactivate...")
     p = open(pjoin(home, '.virtualenvs/postactivate'), 'a')
-    f = open('virtualenv_lines', 'r')
-    for l in f.readlines():
-        p.write(l)
-    f.close()
+    for l in config_lines['postactivate']:
+        p.write(l+'\n')
     p.close()
 
     ###############################
@@ -143,7 +140,7 @@ def install(env):
     check_call(run_tests, shell=True, env=env)
 
 
-def purge(env):
+def purge(env, config_lines):
     """
     Purge the installation of the pipeline in UPPMAX.
     """
@@ -155,9 +152,7 @@ def purge(env):
     b = open(pjoin(home, '.bashrc'), 'r')
     bashrc = b.readlines()
     b.close()
-    f = open('bash_lines', 'r')
-    bash_lines = f.readlines()
-    f.close()
+    bash_lines = config_lines['.bashrc']
     b = open(pjoin(home, '.bashrc'), 'w')
     for l in bashrc:
         if l not in bash_lines:
@@ -172,9 +167,7 @@ def purge(env):
     p = open(pjoin(home, '.virtualenvs/postactivate'), 'r')
     postactive = p.readlines()
     p.close()
-    f = open('virtualenv_lines', 'r')
-    virtualenvLines = f.readlines()
-    f.close()
+    virtualenvLines = config_lines['postactivate']
     p = open(pjoin(home, '.virtualenvs/postactivate'), 'w')
     for l in virtualenvLines:
         if l not in postactive:
@@ -183,11 +176,6 @@ def purge(env):
 
     log.info('Removing ~/opt directory...')
     shutil.rmtree(pjoin(home, 'opt'))
-
-
-def test(env):
-    log = logging.getLogger("UPLogger")
-    log.info('The test works properly')
 
 
 if __name__ == '__main__':
@@ -201,7 +189,6 @@ if __name__ == '__main__':
     function_map = {
         'install': install,
         'purge': purge,
-        'test': test,
     }
 
     try:
@@ -220,5 +207,10 @@ if __name__ == '__main__':
     logger.addHandler(h1)
     logger.addHandler(h2)
 
+    #Config json file
+    f = open('env.js', 'r')
+    config_lines = json.load(f)
+    f.close()
+
     #check_call the function
-    function(env)
+    function(env, config_lines)
