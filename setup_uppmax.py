@@ -208,7 +208,7 @@ if __name__ == '__main__':
     logger.addHandler(h2)
 
     #Config json file
-    f = open('env.js', 'r')
+    f = open('env.json', 'r')
     config_lines = json.load(f)
     f.close()
 
