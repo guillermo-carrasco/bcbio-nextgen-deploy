@@ -41,7 +41,7 @@ For more information about how vagrant works, refear to the [vagrant guide][o4]
 
 To configure and install the pipeline in UPPMAX you just have to execute the following script:
 
-            python setup_uppmax.py install
+            python deploy_non_root.py install
 
 This will:
 * Set up virtualenvwrapper creating and configurin a proper virtual environment
