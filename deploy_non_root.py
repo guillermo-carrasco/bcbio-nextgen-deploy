@@ -30,7 +30,7 @@ def install(env, config_lines):
     log.info("SETTING UP VIRTUALENVWRAPPER")
     log.info("Editing .bashrc...")
     bashrc = open(pjoin(home, '.bashrc'), 'a')
-    for l in config_lines['.bashrc']:
+    for l in config_lines['.bashrc_HPC']:
         bashrc.write(l+'\n')
     bashrc.close()
 
@@ -152,7 +152,7 @@ def purge(env, config_lines):
     b = open(pjoin(home, '.bashrc'), 'r')
     bashrc = b.readlines()
     b.close()
-    bash_lines = config_lines['.bashrc']
+    bash_lines = config_lines['.bashrc_HPC']
     b = open(pjoin(home, '.bashrc'), 'w')
     for l in bashrc:
         if l not in bash_lines:
@@ -208,7 +208,7 @@ if __name__ == '__main__':
     logger.addHandler(h2)
 
     #Config json file
-    f = open('env.json', 'r')
+    f = open('env.jso', 'r')
     config_lines = json.load(f)
     f.close()
 
