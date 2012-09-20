@@ -30,7 +30,7 @@ def install_VM():
 
     #Error handling, just in case that already exists a vagrant box with the same name
     with settings(warn_only=True):
-        result = local("vagrant box add precise32 http://files.vagrantup.com/precise32.box", capture=True)
+        result = local("vagrant box add precise32 http://files.vagrantup.com/precise64.box", capture=True)
     if result.failed and not confirm("It looks like already exists a vagrant box with this name in your system, do you want to continue using this box? (y/n)"):
         abort("Aborting at user request")
     local("vagrant up")
