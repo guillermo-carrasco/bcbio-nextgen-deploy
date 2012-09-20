@@ -208,7 +208,13 @@ if __name__ == '__main__':
     logger.addHandler(h2)
 
     #Config json file
-    f = open('env.jso', 'r')
+    try:
+        f = open('env.jso', 'r')
+    except IOError:
+        print "ERROR: Could not find env.json file."
+        print "Try to do a \"git pull origin master\" to restore the file."
+        raise
+
     config_lines = json.load(f)
     f.close()
 
