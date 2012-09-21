@@ -18,7 +18,9 @@ def install(env, config_lines):
     #Common dirs
     home = env['HOME']
     opt_dir = pjoin(home, 'opt')
-    modules_dir = pjoin(home, 'opt/modules')
+    inHPC = env.has_key('module')
+    if inHPC:
+        modules_dir = pjoin(home, 'opt/modules')
     config_dir = pjoin(home, 'opt/config')
     bcbb_dir = pjoin(home, 'opt/bcbb')
 
@@ -30,6 +32,10 @@ def install(env, config_lines):
     log.info("SETTING UP VIRTUALENVWRAPPER")
     log.info("Editing .bashrc...")
     bashrc = open(pjoin(home, '.bashrc'), 'a')
+    if inHPC:
+        bash_lines = config_lines['.bashrc_HPC']
+    else:
+        bash_lines = config_lines['.bashrc_non_root']
     for l in config_lines['.bashrc_HPC']:
         bashrc.write(l+'\n')
     bashrc.close()
@@ -209,7 +215,7 @@ if __name__ == '__main__':
 
     #Config json file
     try:
-        f = open('env.jso', 'r')
+        f = open('env.json', 'r')
     except IOError:
         print "ERROR: Could not find env.json file."
         print "Try to do a \"git pull origin master\" to restore the file."
