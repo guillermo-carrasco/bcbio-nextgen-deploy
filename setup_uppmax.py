@@ -44,7 +44,9 @@ def install(env, config_lines):
         '''
 
     log.info("Installing virtualenvwrapper and creating a virtual environment \"master\" for the production pipeline...")
-    os.makedirs(pjoin(home, 'opt/mypython/lib/python2.6/site-packages'))
+    python_dir = pjoin(home, 'opt/mypython/lib/python2.6/site-packages')
+    if not os.path.exists(python_dir):
+        os.makedirs(python_dir)
     check_call(install_and_create_virtualenv, shell=True, env=env)
 
     #Modify ~/.virtualenvs/postactivate...
