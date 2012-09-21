@@ -155,7 +155,7 @@ def purge(env, config_lines):
     bash_lines = config_lines['.bashrc']
     b = open(pjoin(home, '.bashrc'), 'w')
     for l in bashrc:
-        if l not in bash_lines:
+        if l.rstrip() not in bash_lines:
             b.write(l)
     b.close()
     
@@ -170,8 +170,8 @@ def purge(env, config_lines):
     virtualenvLines = config_lines['postactivate']
     p = open(pjoin(home, '.virtualenvs/postactivate'), 'w')
     for l in virtualenvLines:
-        if l not in postactive:
-            p.write(l)
+        if l.rstrip() not in postactive:
+            p.write(l+'\n')
     p.close()
 
     log.info('Removing ~/opt directory...')
