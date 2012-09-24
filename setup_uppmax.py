@@ -5,6 +5,7 @@ import shutil
 import sys
 import logging
 import json
+import subprocess
 from os.path import join as pjoin
 from subprocess import check_call
 
@@ -56,24 +57,9 @@ def install(env, config_lines):
     for l in config_lines['postactivate']:
         p.write(l+'\n')
     p.close()
+    #Create ~/.modules file
+    shutil.copy(pjoin(deploy_dir, 'modules'), pjoin(home, '.modules'))
 
-    ###############################
-    # Setting up config directory #
-    ###############################
-    #log.info("SETTING UP CONFIG REPOSITORY")
-    #if os.path.exists(config_dir):
-    #    shutil.rmtree(config_dir)
-    #os.chdir(opt_dir)
-    #log.info("Cloning config repository...")
-    #check_call('git clone git@code.scilifelab.se:bcbb_config config', shell=True, env=env)
-    #os.chmod('config', 0700)
-    #log.info("Checking out biologin production branch...")
-    #os.chdir('config')
-    #check_call('git checkout biologin', shell=True, env=env)
-    #log.info("Creating symlink to Galaxy\'s tool-data directory...")
-    #os.symlink('/bubo/nobackup/uppnex/reference/biodata/galaxy/tool-data', 'tool-data')
-    #log.info("Generate SHA digest and update...")
-    #check_call('git rev-parse --short --verify HEAD > ~/.config_version', shell=True, env=env)
 
     #############################
     # Setting up custom modules #
@@ -129,11 +115,9 @@ def install(env, config_lines):
     log.info("RUNNING TEST SUITE")
     log.info("Preparing testsuite...")
     os.chdir(pjoin(bcbb_dir, 'nextgen/tests/data/automated'))
-    shutil.copy(pjion(deploy_dir, 'post_process.yaml'), 'post_process.yaml')
+    shutil.copy(pjoin(deploy_dir, 'post_process.yaml'), 'post_process.yaml')
+    
     # Run the testsuite with reduced test data
-    #sed_command = '''sed 's:galaxy_config\: $HOME/opt/config/universe_wsgi.ini:galaxy_config\: universe_wsgi.ini:' < post_process.yaml > _post_process.yaml'''
-    #check_call(sed_command, shell=True)
-    #shutil.move('_post_process.yaml','post_process.yaml')
     run_tests = """
         . ~/.bashrc &&
         workon master &&
@@ -148,6 +132,7 @@ def purge(env, config_lines):
     Purge the installation of the pipeline in UPPMAX.
     """
     home = env['HOME']
+    opt_dir = pjoin(home, 'opt')
     log = logging.getLogger("UPLogger")
 
     # Edit the ~/.bashrc configuration file
@@ -163,22 +148,33 @@ def purge(env, config_lines):
     b.close()
     
     log.info("Removing created virtualenv...")
-    check_call('. ~/opt/mypython/bin/virtualenvwrapper.sh && \
-                rmvirtualenv master', shell=True, env=env)
+    try:
+        check_call('. ~/opt/mypython/bin/virtualenvwrapper.sh && \
+                    rmvirtualenv master', shell=True, env=env)
+    except subprocess.CalledProcessError:
+        log.warning('No master virtualenv found, just skipping this step!')
+        pass
 
-    log.info("Cleaning .virtualenvs/postactivate...")
-    p = open(pjoin(home, '.virtualenvs/postactivate'), 'r')
-    postactive = p.readlines()
-    p.close()
-    virtualenvLines = config_lines['postactivate']
-    p = open(pjoin(home, '.virtualenvs/postactivate'), 'w')
-    for l in postactive:
-        if l not in virtualenvLines:
-            p.write(l+'\n')
-    p.close()
+    try:
+        os.remove(pjoin(home, '.modules'))
+    except OSError:
+        pass
 
-    log.info('Removing ~/opt directory...')
-    shutil.rmtree(pjoin(home, 'opt'))
+    if os.path.exists(pjoin(home, '.virtualenvs/postactivate')):
+        log.info("Cleaning .virtualenvs/postactivate...")
+        p = open(pjoin(home, '.virtualenvs/postactivate'), 'r')
+        postactive = p.readlines()
+        p.close()
+        virtualenvLines = config_lines['postactivate']
+        p = open(pjoin(home, '.virtualenvs/postactivate'), 'w')
+        for l in postactive:
+            if l.rstrip() not in virtualenvLines:
+                p.write(l)
+        p.close()
+
+    if os.path.exists(opt_dir):
+        log.info('Removing ~/opt directory...')
+        shutil.rmtree(opt_dir)
 
 
 if __name__ == '__main__':
