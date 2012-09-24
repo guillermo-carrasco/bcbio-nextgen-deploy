@@ -1,0 +1,96 @@
+galaxy_url: http://your/galaxy/url
+galaxy_api_key: your_galaxy_api_key
+galaxy_config: universe_wsgi.ini
+program:
+  bowtie: bowtie
+  samtools: samtools
+  bwa: bwa
+  tophat: tophat
+  cufflinks: cufflinks
+  ucsc_bigwig: wigToBigWig
+  picard: $PICARD_HOME
+  gatk: $GATK_HOME
+  snpEff: $SNPEFF_HOME
+  fastqc: fastqc
+  pdflatex: pdflatex
+  barcode: barcode_sort_trim.py
+algorithm:
+  aligner: bowtie
+  max_errors: 2
+  num_cores: 8
+  platform: illumina
+  recalibrate: false
+  snpcall: false
+  bc_mismatch: 2
+  bc_allow_indels: true
+  bc_read: 1
+  bc_position: 3
+  java_memory: 6g
+  upload_fastq: false
+  save_diskspace: false
+  screen_contaminants: true
+
+log_dir: log
+msg_process_tag: sqn_finished_process
+msg_store_tag: sqn_finished_store
+store_dir: /proj/a2010001/illumina/devel
+store_user: vale
+store_host: localhost
+
+analysis:
+  # Can specify a different remote host to initiate
+  # the copy from. This is useful for NFS shared filesystems
+  # where you want to manage the copy from the base machine.
+  copy_user: vale
+  copy_host: localhost
+  copy_keyfile: /bubo/home/h10/vale/private/local_key
+  store_dir: /proj/a2010001/illumina/devel
+  base_dir: /proj/a2010001/illumina/devel
+  towig_script: bam_to_wiggle.py
+  process_program: automated_initial_analysis.py
+  distributed_process_program: distributed_nextgen_pipeline.py
+  upload_program: upload_to_galaxy.py
+  worker_program: nextgen_analysis_server.py
+distributed:
+  cluster_platform: slurm
+  platform_args: '-q core -A a2010002 -t 3:00:00 --mail-user=valentine.svensson@scilifelab.se --mail-type=ALL'
+  cores_per_host: 0 # 0 uses all cores, otherwise can configure for architecture
+  # num_workers: 2 # only required if cores_per_host is 0, otherwise use all needed
+  rabbitmq_vhost: bionextgen_valentines
+# configuration algorithm changes for custom post-processing steps
+custom_algorithms:
+  'SNP calling':
+    aligner: bwa
+    recalibrate: true
+    recalibration_plots: false
+    snpcall: true
+    coverage_depth: "low" # Options: low, high
+    coverage_interval: "exome" # Options: exome, genome
+    dbsnp: variation/dbsnp_132.vcf
+    train_hapmap: variation/hapmap_3.3.vcf
+    train_1000g_omni: variation/1000G_omni2.5.vcf
+    train_indels: variation/Mills_Devine_2hit.indels.vcf
+  'RNA-seq':
+    aligner: tophat
+    transcript_assemble: true
+    transcripts: rnaseq/ref-transcripts.gtf
+    transcripts_mask: rnaseq/ref-transcripts-mask.gtf
+  'Minimal':
+    aligner: ""
+# Define resources to be used for individual programs on multicore machines.
+# These can be defined specifically for memory and processor availability.
+# Distributed systems 
+# - Specify usage for memory intensive programs
+# - Define cores that can be used for multicore programs.
+resources:
+  ucsc_bigwig:
+    memory: 36g
+  bowtie:
+    cores:
+  tophat:
+    cores: 
+  bwa:
+    cores: 5
+  gatk:
+    cores: 5
+
