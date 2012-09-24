@@ -1,0 +1,49 @@
+#!/bin/sh
+## Script ready to be put on python virtualenv environment
+## should be called from ~/.virtualenv/<workspace>/bin/postactivate
+## *NOT* from .bashrc or 
+
+# No python modules are loaded since only the ones
+# in the virtual environment will be used.
+# "mkvirtualenv --no-site-packages <workspace>" is assumed
+
+MODS="bioinfo-tools
+bowtie/0.12.7
+samtools/0.1.12-10
+bwa/0.5.9
+maq/0.7.1
+mosaik-aligner/1.0.1388
+python/2.6.6
+CASAVA/1.7.0
+#picard/1.41
+#GATK/1.4.21
+cufflinks/2.0.2
+tophat/1.3.3
+Fastx/0.0.13
+FastQC/0.7.2
+R/2.14
+emboss/6.4.0
+gnuplot/4.4.3
+BEDTools/2.11.2
+freebayes"
+
+# Custom modules from SciLifeLab/modules.sf.net
+MODS="$MODS
+fastqscreen/0.2.1
+GATK/1.5
+snpEff/2.0.5
+picard/1.64
+ucsc_tools/20120530"
+
+#module purge
+
+for mod in $MODS
+do
+	module load $mod >& /dev/null
+done
+
+# We unset PYTHONHOME set by the module system, 
+# otherwise the system will not use the python
+# of virtualenv
+#unset PYTHONHOME
+module unload python
