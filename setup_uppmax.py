@@ -17,6 +17,7 @@ def install(env, config_lines):
     log = logging.getLogger("UPLogger")
     #Common dirs
     home = env['HOME']
+    deploy_dir = os.getcwd()
     opt_dir = pjoin(home, 'opt')
     modules_dir = pjoin(home, 'opt/modules')
     config_dir = pjoin(home, 'opt/config')
@@ -59,20 +60,20 @@ def install(env, config_lines):
     ###############################
     # Setting up config directory #
     ###############################
-    log.info("SETTING UP CONFIG REPOSITORY")
-    if os.path.exists(config_dir):
-        shutil.rmtree(config_dir)
-    os.chdir(opt_dir)
-    log.info("Cloning config repository...")
-    check_call('git clone git@code.scilifelab.se:bcbb_config config', shell=True, env=env)
-    os.chmod('config', 0700)
-    log.info("Checking out biologin production branch...")
-    os.chdir('config')
-    check_call('git checkout biologin', shell=True, env=env)
-    log.info("Creating symlink to Galaxy\'s tool-data directory...")
-    os.symlink('/bubo/nobackup/uppnex/reference/biodata/galaxy/tool-data', 'tool-data')
-    log.info("Generate SHA digest and update...")
-    check_call('git rev-parse --short --verify HEAD > ~/.config_version', shell=True, env=env)
+    #log.info("SETTING UP CONFIG REPOSITORY")
+    #if os.path.exists(config_dir):
+    #    shutil.rmtree(config_dir)
+    #os.chdir(opt_dir)
+    #log.info("Cloning config repository...")
+    #check_call('git clone git@code.scilifelab.se:bcbb_config config', shell=True, env=env)
+    #os.chmod('config', 0700)
+    #log.info("Checking out biologin production branch...")
+    #os.chdir('config')
+    #check_call('git checkout biologin', shell=True, env=env)
+    #log.info("Creating symlink to Galaxy\'s tool-data directory...")
+    #os.symlink('/bubo/nobackup/uppnex/reference/biodata/galaxy/tool-data', 'tool-data')
+    #log.info("Generate SHA digest and update...")
+    #check_call('git rev-parse --short --verify HEAD > ~/.config_version', shell=True, env=env)
 
     #############################
     # Setting up custom modules #
@@ -128,11 +129,11 @@ def install(env, config_lines):
     log.info("RUNNING TEST SUITE")
     log.info("Preparing testsuite...")
     os.chdir(pjoin(bcbb_dir, 'nextgen/tests/data/automated'))
-    shutil.copy(pjoin(config_dir, 'tests/data/automated/post_process.yaml'), 'post_process.yaml')
+    shutil.copy(pjion(deploy_dir, 'post_process.yaml'), 'post_process.yaml')
     # Run the testsuite with reduced test data
-    sed_command = '''sed 's:galaxy_config\: $HOME/opt/config/universe_wsgi.ini:galaxy_config\: universe_wsgi.ini:' < post_process.yaml > _post_process.yaml'''
-    check_call(sed_command, shell=True)
-    shutil.move('_post_process.yaml','post_process.yaml')
+    #sed_command = '''sed 's:galaxy_config\: $HOME/opt/config/universe_wsgi.ini:galaxy_config\: universe_wsgi.ini:' < post_process.yaml > _post_process.yaml'''
+    #check_call(sed_command, shell=True)
+    #shutil.move('_post_process.yaml','post_process.yaml')
     run_tests = """
         . ~/.bashrc &&
         workon master &&
@@ -171,8 +172,8 @@ def purge(env, config_lines):
     p.close()
     virtualenvLines = config_lines['postactivate']
     p = open(pjoin(home, '.virtualenvs/postactivate'), 'w')
-    for l in virtualenvLines:
-        if l.rstrip() not in postactive:
+    for l in postactive:
+        if l not in virtualenvLines:
             p.write(l+'\n')
     p.close()
 
