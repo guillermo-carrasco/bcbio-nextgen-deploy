@@ -23,33 +23,54 @@ def install(env, config_lines):
     inHPC = env.has_key('module')
     if inHPC:
         modules_dir = pjoin(home, 'opt/modules')
-    config_dir = pjoin(home, 'opt/config')
     bcbb_dir = pjoin(home, 'opt/bcbb')
 
-    ################################
-    # Setting up virtualenvwrapper #
-    ################################
-
-    #Modify .bahrc
-    log.info("SETTING UP VIRTUALENVWRAPPER")
-    log.info("Editing .bashrc...")
-    bashrc = open(pjoin(home, '.bashrc'), 'a')
-    if inHPC:
-        bash_lines = config_lines['.bashrc_HPC']
-    else:
-        bash_lines = config_lines['.bashrc_non_root']
-    for l in config_lines['.bashrc_HPC']:
-        bashrc.write(l+'\n')
-    bashrc.close()
-
+    #Bash commands
     #Install virtualenvwrapper and create a virtual environment "master" for the production pipeline
     install_and_create_virtualenv ='''
         easy_install --prefix=~/opt/mypython pip &&
         pip install virtualenvwrapper --install-option="--prefix=~/opt/mypython" &&
         . ~/.bashrc &&
-        module unload python &&
+        {module_unload_python}
         mkvirtualenv --python=/sw/comp/python/2.7_kalkyl/bin/python master
         '''
+
+    install_code_in_production = """
+        . ~/.bashrc &&
+        cd ~/opt/bcbb/nextgen &&
+        workon master &&
+        pip install numpy &&
+        python setup.py install
+        """
+
+    run_tests = """
+        . ~/.bashrc &&
+        workon master &&
+        {runtests}
+        """
+
+    if inHPC:
+        install_and_create_virtualenv = install_and_create_virtualenv.format(module_unload_python='module unload python &&')
+        bash_lines = config_lines['.bashrc_HPC']
+        run_tests = run_tests.format(runtests='python ~/opt/bcbb/nextgen/tests/runtests_drmaa.py')
+    else:
+        install_and_create_virtualenv = install_and_create_virtualenv.format(module_unload_python='')
+        bash_lines = config_lines['.bashrc_non_root']
+        run_tests = run_tests.format(runtests='nosetests -s -v --with-xunit -a standard')
+
+    ##########################
+    # Setting up virtualenvwrapper #
+    ##########################
+
+    #Modify .bahrc
+    log.info("SETTING UP VIRTUALENVWRAPPER")
+    log.info("Editing .bashrc...")
+    bashrc = open(pjoin(home, '.bashrc'), 'a')
+    for l in bash_lines:
+        bashrc.write(l+'\n')
+    bashrc.close()
+
+    ###################################
 
     log.info("Installing virtualenvwrapper and creating a virtual environment \"master\" for the production pipeline...")
     python_dir = pjoin(home, 'opt/mypython/lib/python2.6/site-packages')
@@ -57,26 +78,27 @@ def install(env, config_lines):
         os.makedirs(python_dir)
     check_call(install_and_create_virtualenv, shell=True, env=env)
 
-    #Modify ~/.virtualenvs/postactivate...
-    log.info("Editing ~/.virtualenvs/postactivate...")
-    p = open(pjoin(home, '.virtualenvs/postactivate'), 'a')
-    for l in config_lines['postactivate']:
-        p.write(l+'\n')
-    p.close()
-    #Create ~/.modules file
-    shutil.copy(pjoin(deploy_dir, 'modules'), pjoin(home, '.modules'))
+    if inHPC:
+        #Modify ~/.virtualenvs/postactivate...
+        log.info("Editing ~/.virtualenvs/postactivate...")
+        p = open(pjoin(home, '.virtualenvs/postactivate'), 'a')
+        for l in config_lines['postactivate']:
+            p.write(l+'\n')
+        p.close()
+        #Create ~/.modules file
+        shutil.copy(pjoin(deploy_dir, 'modules'), pjoin(home, '.modules'))
 
 
-    #############################
-    # Setting up custom modules #
-    #############################
-    log.info("SETTING UP CUSTOM MODULES")
-    os.chdir(opt_dir)
-    if os.path.exists(modules_dir):
-        shutil.rmtree(modules_dir)
-    check_call('git clone http://github.com/SciLifeLab/modules.sf.net.git modules', shell=True, env=env)
-    os.chdir(modules_dir)
-    check_call('git checkout master', shell=True, env=env)
+        #############################
+        # Setting up custom modules #
+        #############################
+        log.info("SETTING UP CUSTOM MODULES")
+        os.chdir(opt_dir)
+        if os.path.exists(modules_dir):
+            shutil.rmtree(modules_dir)
+        check_call('git clone http://github.com/SciLifeLab/modules.sf.net.git modules', shell=True, env=env)
+        os.chdir(modules_dir)
+        check_call('git checkout master', shell=True, env=env)
     
     #################################
     # Setting up bcbb pipeline code #
@@ -90,13 +112,6 @@ def install(env, config_lines):
     check_call('cd bcbb && git checkout master && cd nextgen/bcbio/scilifelab && git checkout master', shell=True, env=env)
 
     log.info("Installing the pipeline...")
-    install_code_in_production = """
-        . ~/.bashrc &&
-        cd ~/opt/bcbb/nextgen &&
-        workon master &&
-        pip install numpy &&
-        python setup.py install
-        """
     check_call(install_code_in_production, shell=True, env=env)
     
     ##########################################
@@ -124,11 +139,6 @@ def install(env, config_lines):
     shutil.copy(pjoin(deploy_dir, 'post_process.yaml'), 'post_process.yaml')
     
     # Run the testsuite with reduced test data
-    run_tests = """
-        . ~/.bashrc &&
-        workon master &&
-        python ~/opt/bcbb/nextgen/tests/runtests_drmaa.py
-        """
     log.info("Running test suite...")
     check_call(run_tests, shell=True, env=env)
 
