@@ -155,13 +155,25 @@ def purge(env, config_lines):
     home = env['HOME']
     opt_dir = pjoin(home, 'opt')
     log = logging.getLogger("UPLogger")
+    inHPC = env.has_key('module')
+
+    if inHPC:
+        bash_lines = config_lines['.bashrc_HPC']
+    else:
+        bash_lines = config_lines['.bashrc_non_root']
 
     # Edit the ~/.bashrc configuration file
+    for i in range(len(bash_lines)):
+        try:
+            bash_lines[i].format(pythonpath=env['PYTHONPATH'])
+        except KeyError:
+            pass
+    
     log.info('Cleaning .bashrc...')
     b = open(pjoin(home, '.bashrc'), 'r')
     bashrc = b.readlines()
     b.close()
-    bash_lines = config_lines['.bashrc_HPC']
+    
     b = open(pjoin(home, '.bashrc'), 'w')
     for l in bashrc:
         if l.rstrip() not in bash_lines:
