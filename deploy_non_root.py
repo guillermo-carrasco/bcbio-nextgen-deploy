@@ -6,6 +6,7 @@ import sys
 import logging
 import json
 import subprocess
+import platform
 from os.path import join as pjoin
 from subprocess import check_call
 
@@ -49,7 +50,7 @@ def install(env, config_lines):
         {runtests}
         """
 
-    if inHPC:
+    if inHPC: 
         install_and_create_virtualenv = install_and_create_virtualenv.format(module_unload_python='module unload python &&')
         bash_lines = config_lines['.bashrc_HPC']
         run_tests = run_tests.format(runtests='python ~/opt/bcbb/nextgen/tests/runtests_drmaa.py')
@@ -67,7 +68,7 @@ def install(env, config_lines):
     log.info("Editing .bashrc...")
     bashrc = open(pjoin(home, '.bashrc'), 'a')
     for l in bash_lines:
-        bashrc.write(l+'\n')
+        bashrc.write(l.format(pythonpath=env['PYTHONPATH'])+'\n')
     bashrc.close()
 
     ###################################
@@ -198,7 +199,9 @@ if __name__ == '__main__':
     #Work with a copy of the current environment and tune it
     env = dict(os.environ)
     env['PATH'] = ':'.join([env['PATH'], pjoin(env['HOME'], 'opt/mypython/bin')])
-    env['PYTHONPATH'] = pjoin(env['HOME'], 'opt/mypython/lib/python2.6/site-packages')
+    #Detect python version and set the proper PYTHONPATH
+    version = '.'.join(platform.python_version_tuple()[0:2])
+    env['PYTHONPATH'] = pjoin(env['HOME'], 'opt/mypython/lib/python{version}/site-packages').format(version=version)
 
     #Parse the funcion
     function_map = {
