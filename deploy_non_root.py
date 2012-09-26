@@ -152,6 +152,7 @@ def install(env, config_lines):
     
     # Run the testsuite with reduced test data
     log.info("Running test suite...")
+    os.chdir(pjoin(bcbb_dir, 'nextgen/tests'))
     Popen(run_tests, shell=True, executable='/bin/bash', env=env).wait()
 
 
