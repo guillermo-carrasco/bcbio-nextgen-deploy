@@ -68,7 +68,11 @@ def install(env, config_lines):
     log.info("Editing .bashrc...")
     bashrc = open(pjoin(home, '.bashrc'), 'a')
     for l in bash_lines:
-        bashrc.write(l.format(pythonpath=env['PYTHONPATH'])+'\n')
+        try:
+            l = l.format(pythonpath=env['PYTHONPATH'])
+        except KeyError:
+            pass
+        bashrc.write(l+'\n')
     bashrc.close()
 
     ###################################
