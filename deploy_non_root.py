@@ -9,6 +9,7 @@ import subprocess
 import platform
 from os.path import join as pjoin
 from subprocess import check_call
+from subprocess import Popen
 
 
 def install(env, config_lines):
@@ -27,13 +28,12 @@ def install(env, config_lines):
     bcbb_dir = pjoin(home, 'opt/bcbb')
 
     #Bash commands
-    #Install virtualenvwrapper and create a virtual environment "master" for the production pipeline
     install_and_create_virtualenv ='''
         easy_install --prefix=~/opt/mypython pip &&
         pip install virtualenvwrapper --install-option="--prefix=~/opt/mypython" &&
         . ~/.bashrc &&
         {module_unload_python}
-        mkvirtualenv --python=/sw/comp/python/2.7_kalkyl/bin/python master
+        mkvirtualenv --python={python_bin} master
         '''
 
     install_code_in_production = """
@@ -44,6 +44,14 @@ def install(env, config_lines):
         python setup.py install
         """
 
+    download_and_install_scripts = """
+        git clone http://github.com/SciLifeLab/scilifelab.git scilifelab &&
+        cd scilifelab && git checkout master &&
+        . ~/.bashrc &&
+        workon master &&
+        python setup.py install
+        """
+
     run_tests = """
         . ~/.bashrc &&
         workon master &&
@@ -51,11 +59,11 @@ def install(env, config_lines):
         """
 
     if inHPC: 
-        install_and_create_virtualenv = install_and_create_virtualenv.format(module_unload_python='module unload python &&')
+        install_and_create_virtualenv = install_and_create_virtualenv.format(module_unload_python='module unload python &&', python_bin='/sw/comp/python/2.7_kalkyl/bin/python')
         bash_lines = config_lines['.bashrc_HPC']
         run_tests = run_tests.format(runtests='python ~/opt/bcbb/nextgen/tests/runtests_drmaa.py')
     else:
-        install_and_create_virtualenv = install_and_create_virtualenv.format(module_unload_python='')
+        install_and_create_virtualenv = install_and_create_virtualenv.format(module_unload_python='', python_bin='/usr/bin/python')
         bash_lines = config_lines['.bashrc_non_root']
         run_tests = run_tests.format(runtests='nosetests -s -v --with-xunit -a standard')
 
@@ -81,7 +89,7 @@ def install(env, config_lines):
     python_dir = env['PYTHONPATH']
     if not os.path.exists(python_dir):
         os.makedirs(python_dir)
-    check_call(install_and_create_virtualenv, shell=True, env=env)
+    Popen(install_and_create_virtualenv, shell=True, executable='/bin/bash', env=env)
 
     if inHPC:
         #Modify ~/.virtualenvs/postactivate...
@@ -117,7 +125,7 @@ def install(env, config_lines):
     check_call('cd bcbb && git checkout master && cd nextgen/bcbio/scilifelab && git checkout master', shell=True, env=env)
 
     log.info("Installing the pipeline...")
-    check_call(install_code_in_production, shell=True, env=env)
+    Popen(install_code_in_production, shell=True, executable='/bin/bash', env=env)
     
     ##########################################
     # Setting up scilifelab utility scriipts #
@@ -126,14 +134,7 @@ def install(env, config_lines):
     log.info("Downloading and installing scilifelab scripts...")
     if os.path.exists('scilifelab'):
         shutil.rmtree('scilifelab')
-    download_and_install_scripts = """
-        git clone http://github.com/SciLifeLab/scilifelab.git scilifelab &&
-        cd scilifelab && git checkout master &&
-        . ~/.bashrc &&
-        workon master &&
-        python setup.py install
-        """
-    check_call(download_and_install_scripts, shell=True, env=env)
+    Popen(download_and_install_scripts, shell=True, executable='/bin/bash', env=env)
 
     ######################
     # Running test suite #
@@ -145,7 +146,7 @@ def install(env, config_lines):
     
     # Run the testsuite with reduced test data
     log.info("Running test suite...")
-    check_call(run_tests, shell=True, env=env)
+    Popen(run_tests, shell=True, executable='/bin/bash', env=env)
 
 
 def purge(env, config_lines):
