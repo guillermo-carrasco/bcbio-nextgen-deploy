@@ -165,7 +165,7 @@ def purge(env, config_lines):
     # Edit the ~/.bashrc configuration file
     for i in range(len(bash_lines)):
         try:
-            bash_lines[i].format(pythonpath=env['PYTHONPATH'])
+            bash_lines[i] = bash_lines[i].format(pythonpath=env['PYTHONPATH'])
         except KeyError:
             pass
     
