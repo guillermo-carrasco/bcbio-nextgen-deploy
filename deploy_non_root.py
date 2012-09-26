@@ -79,7 +79,6 @@ def install(env, config_lines):
     sed_command = '''sed '/[ -z "$PS1" ] && return/d' < ~/.bashrc > ~/.bashrc_'''
     check_call(sed_command, shell=True)
     shutil.move(pjoin(home, '.bashrc_'), pjoin(home, '.bashrc'))
-    os.remove(pjoin(home, '.bashrc_'))
     
     bashrc = open(pjoin(home, '.bashrc'), 'a')
     for l in bash_lines:
