@@ -95,7 +95,7 @@ def install(env, config_lines):
     python_dir = env['PYTHONPATH']
     if not os.path.exists(python_dir):
         os.makedirs(python_dir)
-    Popen(install_and_create_virtualenv, shell=True, executable='/bin/bash', env=env)
+    Popen(install_and_create_virtualenv, shell=True, executable='/bin/bash', env=env).wait()
 
     if inHPC:
         #Modify ~/.virtualenvs/postactivate...
@@ -131,7 +131,7 @@ def install(env, config_lines):
     check_call('cd bcbb && git checkout master && cd nextgen/bcbio/scilifelab && git checkout master', shell=True, env=env)
 
     log.info("Installing the pipeline...")
-    Popen(install_code_in_production, shell=True, executable='/bin/bash', env=env)
+    Popen(install_code_in_production, shell=True, executable='/bin/bash', env=env).wait()
     
     ##########################################
     # Setting up scilifelab utility scriipts #
@@ -140,7 +140,7 @@ def install(env, config_lines):
     log.info("Downloading and installing scilifelab scripts...")
     if os.path.exists('scilifelab'):
         shutil.rmtree('scilifelab')
-    Popen(download_and_install_scripts, shell=True, executable='/bin/bash', env=env)
+    Popen(download_and_install_scripts, shell=True, executable='/bin/bash', env=env).wait()
 
     ######################
     # Running test suite #
@@ -152,7 +152,7 @@ def install(env, config_lines):
     
     # Run the testsuite with reduced test data
     log.info("Running test suite...")
-    Popen(run_tests, shell=True, executable='/bin/bash', env=env)
+    Popen(run_tests, shell=True, executable='/bin/bash', env=env).wait()
 
 
 def purge(env, config_lines):
