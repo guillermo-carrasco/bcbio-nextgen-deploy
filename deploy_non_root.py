@@ -217,7 +217,7 @@ if __name__ == '__main__':
     env['PATH'] = ':'.join([env['PATH'], pjoin(env['HOME'], 'opt/mypython/bin')])
     #Detect python version and set the proper PYTHONPATH
     version = '.'.join(platform.python_version_tuple()[0:2])
-    env['PYTHONPATH'] = pjoin(env['HOME'], 'opt/mypython/lib/python{version}/site-packages').format(version=version)
+    env['PYTHONPATH'] = '~/opt/mypython/lib/python{version}/site-packages'.format(version=version)
 
     #Parse the funcion
     function_map = {
