@@ -190,7 +190,7 @@ def purge(env, config_lines):
     
     log.info("Removing created virtualenv...")
     rmvirtualenv_failed = Popen('. ~/opt/mypython/bin/virtualenvwrapper.sh && \
-                                                 rmvirtualenv master', shell=True, executable='/bin/bash', env=env)
+                                                 rmvirtualenv master', shell=True, executable='/bin/bash', env=env).wait()
     if rmvirtualenv_failed:
         log.warning('No master virtualenv found, just skipping this step!')
         
