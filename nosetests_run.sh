@@ -9,4 +9,4 @@
 #SBATCH -o nosetest_job.out
 #SBATCH -e nosetest_job.err
 
-nosetests -v -s --with-xunit $1
+nosetests -v -s --with-xunit -a standard $1
