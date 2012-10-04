@@ -12,7 +12,40 @@ from subprocess import check_call
 from subprocess import Popen
 
 
-def install(env, config_lines):
+def _setUp(function):
+
+    #Work with a copy of the current environment and tune it
+    env = dict(os.environ)
+    env['PATH'] = ':'.join([env['PATH'], pjoin(env['HOME'], 'opt/mypython/bin')])
+    #Detect python version and set the proper PYTHONPATH
+    version = '.'.join(platform.python_version_tuple()[0:2])
+    env['PYTHONPATH'] = pjoin(env['HOME'], 'opt/mypython/lib/python{version}/site-packages').format(version=version)
+
+    #Prepare the logger (writting to a file and to stdout)
+    logger = logging.getLogger("UPLogger")
+    logger.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    h1 = logging.StreamHandler()
+    h2 = logging.FileHandler('setup_uppmax.log')
+    h1.setFormatter(formatter)
+    h2.setFormatter(formatter)
+    logger.addHandler(h1)
+    logger.addHandler(h2)
+
+    #Config json file
+    try:
+        f = open('env.json', 'r')
+    except IOError:
+        print "ERROR: Could not find env.json file."
+        print "Try to do a \"git pull origin master\" to restore the file."
+        raise
+
+    config_lines = json.load(f)
+    f.close()
+    function(env, config_lines)
+
+
+def _install(env, config_lines):
     """
     Installs and set up properly the bcbio-nextgen pipeline in UPPMAX.
     """
@@ -156,7 +189,7 @@ def install(env, config_lines):
     Popen(run_tests, shell=True, executable='/bin/bash', env=env).wait()
 
 
-def purge(env, config_lines):
+def _purge(env, config_lines):
     """
     Purge the installation of the pipeline in UPPMAX.
     """
@@ -218,17 +251,10 @@ def purge(env, config_lines):
 
 if __name__ == '__main__':
 
-    #Work with a copy of the current environment and tune it
-    env = dict(os.environ)
-    env['PATH'] = ':'.join([env['PATH'], pjoin(env['HOME'], 'opt/mypython/bin')])
-    #Detect python version and set the proper PYTHONPATH
-    version = '.'.join(platform.python_version_tuple()[0:2])
-    env['PYTHONPATH'] = pjoin(env['HOME'], 'opt/mypython/lib/python{version}/site-packages').format(version=version)
-
     #Parse the funcion
     function_map = {
-        'install': install,
-        'purge': purge,
+        'install': _install,
+        'purge': _purge,
     }
 
     try:
@@ -236,27 +262,5 @@ if __name__ == '__main__':
     except KeyError:
         sys.exit('ERROR: Unknown action ' + '\'' + sys.argv[1] + '\'')
 
-    #Prepare the logger (writting to a file and to stdout)
-    logger = logging.getLogger("UPLogger")
-    logger.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    h1 = logging.StreamHandler()
-    h2 = logging.FileHandler('setup_uppmax.log')
-    h1.setFormatter(formatter)
-    h2.setFormatter(formatter)
-    logger.addHandler(h1)
-    logger.addHandler(h2)
-
-    #Config json file
-    try:
-        f = open('env.json', 'r')
-    except IOError:
-        print "ERROR: Could not find env.json file."
-        print "Try to do a \"git pull origin master\" to restore the file."
-        raise
-
-    config_lines = json.load(f)
-    f.close()
-
     #check_call the function
-    function(env, config_lines)
+    _setUp(function)
