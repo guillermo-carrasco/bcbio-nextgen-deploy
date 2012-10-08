@@ -12,10 +12,7 @@ install:
     - sudo add-apt-repository -y ppa:scilifelab/scilifelab
     - sudo add-apt-repository -y ppa:debian-med/ppa
     - sudo apt-get update
-    - sudo apt-get install --force-yes git-core gcc snpeff picard-tools bowtie freebayes fastqc-0.10.1 gatk r-base texlive tophat openjdk-6-jre samtools unzip lftp cufflinks wigtools
-    #Temporal patch to install a compatible version of BWA until the test files are re-indexed
-    - wget http://downloads.sourceforge.net/project/bio-bwa/bwa-0.5.9.tar.bz2
-    - tar xjf bwa-0.5.9.tar.bz2 && cd bwa-0.5.9 && make && sudo ln -s  `pwd`/bwa /usr/bin/bwa && cd ..
+    - sudo apt-get install --force-yes git-core gcc snpeff picard-tools bowtie bwa freebayes fastqc-0.10.1 gatk r-base texlive tophat openjdk-6-jre samtools unzip lftp cufflinks wigtools.
     - df -h
     - python deploy_non_root.py install
 notifications:
