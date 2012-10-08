@@ -94,10 +94,12 @@ def _install(env, config_lines):
     if inHPC: 
         install_and_create_virtualenv = install_and_create_virtualenv.format(module_unload_python='module unload python &&', python_bin='/sw/comp/python/2.7_kalkyl/bin/python')
         bash_lines = config_lines['.bashrc_HPC']
+        postactivate_lines = config_lines['postactivate_HPC']
         run_tests = run_tests.format(runtests='python ~/opt/bcbb/nextgen/tests/runtests_drmaa.py')
     else:
         install_and_create_virtualenv = install_and_create_virtualenv.format(module_unload_python='', python_bin='/usr/bin/python')
         bash_lines = config_lines['.bashrc_non_root']
+        postactivate_lines = config_lines['postactivate_non_root']
         run_tests = run_tests.format(runtests='nosetests -s -v --with-xunit -a standard')
 
     ##########################
@@ -130,17 +132,17 @@ def _install(env, config_lines):
         os.makedirs(python_dir)
     Popen(install_and_create_virtualenv, shell=True, executable='/bin/bash', env=env).wait()
 
+    #Modify ~/.virtualenvs/postactivate...
+    log.info("Editing ~/.virtualenvs/postactivate...")
+    p = open(pjoin(home, '.virtualenvs/postactivate'), 'a')
+    for l in postactivate_lines:
+        p.write(l+'\n')
+    p.close()
+    #Create ~/.modules file
+    shutil.copy(pjoin(deploy_dir, 'modules'), pjoin(home, '.modules'))
+
+
     if inHPC:
-        #Modify ~/.virtualenvs/postactivate...
-        log.info("Editing ~/.virtualenvs/postactivate...")
-        p = open(pjoin(home, '.virtualenvs/postactivate'), 'a')
-        for l in config_lines['postactivate']:
-            p.write(l+'\n')
-        p.close()
-        #Create ~/.modules file
-        shutil.copy(pjoin(deploy_dir, 'modules'), pjoin(home, '.modules'))
-
-
         #############################
         # Setting up custom modules #
         #############################
@@ -200,8 +202,10 @@ def _purge(env, config_lines):
 
     if inHPC:
         bash_lines = config_lines['.bashrc_HPC']
+        postactivate_lines = config_lines['postactivate_HPC']
     else:
         bash_lines = config_lines['.bashrc_non_root']
+        postactivate_lines = config_lines['postactivate_non_root']
 
     # Edit the ~/.bashrc configuration file
     for i in range(len(bash_lines)):
