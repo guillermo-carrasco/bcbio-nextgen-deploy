@@ -9,7 +9,7 @@ before_install:
     - df -h
     - free
     - sudo apt-get clean
-    - sudo apt-get purge -y ruby mysql-common mysql-client mysql-server emacs python-2.5 python-2.6 python-3.1 python-3.2 postgresql-common postgresql-client postgresql-server-dev-all sqlite3 mongodb-10gen redis-server riak elasticsearch erlang-base libcairo2 libcairo2-dev xserver-xorg-core x11-utils x11-common
+    - sudo apt-get purge -y ruby mysql-common mysql-client mysql-server emacs python2.5 python2.6 python3.1 python3.2 postgresql-common postgresql-client postgresql-server-dev-all sqlite3 mongodb-10gen redis-server riak elasticsearch erlang-base libcairo2 libcairo2-dev xserver-xorg-core x11-utils x11-common
     - sudo apt-get autoremove
     - sudo rm -rf /usr/share/doc
 install:
