@@ -10,7 +10,4 @@ Vagrant::Config.run do |config|
   # Port forwading to 1234 (non standard one) to avoid collision
   config.vm.forward_port 22, 1234
 
-  # Bash provisioning
-  config.vm.provision :shell, :path => "shell_provisioner.sh"
-
 end
