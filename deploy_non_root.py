@@ -185,10 +185,11 @@ def _install(env, config_lines):
     os.chdir(pjoin(bcbb_dir, 'nextgen/tests/data/automated'))
     shutil.copy(pjoin(deploy_dir, 'post_process.yaml'), 'post_process.yaml')
     
-    # Run the testsuite with reduced test data
-    log.info("Running test suite...")
-    os.chdir(pjoin(bcbb_dir, 'nextgen/tests'))
-    Popen(run_tests, shell=True, executable='/bin/bash', env=env).wait()
+    # Run the testsuite with reduced test data (if not in Travis-CI)
+    if not env.has_key('TRAVIS'):
+        log.info("Running test suite...")
+        os.chdir(pjoin(bcbb_dir, 'nextgen/tests'))
+        Popen(run_tests, shell=True, executable='/bin/bash', env=env).wait()
 
 
 def _purge(env, config_lines):
