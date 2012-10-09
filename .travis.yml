@@ -11,9 +11,7 @@ before_install:
     - sudo apt-get purge -y ruby mysql-common mysql-client mysql-server postgresql-common postgresql-client postgresql-server-dev-all sqlite3 mongodb-10gen redis-server riak elasticsearch erlang-base libcairo2 libcairo2-dev xserver-xorg-core x11-utils x11-common
     - sudo apt-get autoremove
     - sudo rm -rf /usr/share/doc
-    - df -h
 install:
-    - uname -a
     -  df -h
     - sudo apt-get install -y python-software-properties
     - sudo add-apt-repository -y ppa:scilifelab/scilifelab
