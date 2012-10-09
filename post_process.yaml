@@ -25,9 +25,10 @@ algorithm:
   bc_allow_indels: true
   bc_read: 1
   bc_position: 3
+  java_memory: 2g
   upload_fastq: false
   save_diskspace: false
-  screen_contaminants: true
+  screen_contaminants: false
 
 log_dir: log
 msg_process_tag: sqn_finished_process
