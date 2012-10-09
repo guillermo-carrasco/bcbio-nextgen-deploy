@@ -22,6 +22,7 @@ install:
     - df -h
     #TEMPORAL SOLUTION - Install snpEff 2.0.5
     - wget http://sourceforge.net/projects/snpeff/files/snpEff_v2_0_5_core.zip && unzip snpEff_v2_0_5_core.zip && sudo mv snpEff_2_0_5 /usr/share/java/snpeff
+    - sudo sed 's/\.\/data\//\/usr\/share\/snpEff\/data/' < /usr/share/java/snpeff/snpEff.config > /usr/share/java/snpeff/snpEff.config_ && mv /usr/share/java/snpeff/snpEff.config_ /usr/share/java/snpeff/snpEff.config
     #Download snpeff gnome database
     - lftp -e 'pget -n 8 http://downloads.sourceforge.net/project/snpeff/databases/v2_0_5/snpEff_v2_0_5_GRCh37.63.zip; quit'
     - sudo unzip snpEff_v2_0_5_GRCh37.63.zip -d /usr/share/snpEff/ && rm snpEff_v2_0_5_GRCh37.63.zip
