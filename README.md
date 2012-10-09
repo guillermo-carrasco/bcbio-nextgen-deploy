@@ -4,7 +4,7 @@ This is a set of scripts to perform an automatic deployment of the next gen sequ
 * Perform a local installation of the pipeline in your machine. To do that, a virtual machine is created and the pipeline is installed whithin this virtual machine, then the test suite is run.
 * Configure and install the pipeline in [UPPMAX][o5] (see detail below)
 
-[![Build Status](https://secure.travis-ci.org/guillermo-carrasco/bcbio-nextgen-deploy.png?branch=develop)](http://travis-ci.org/guillermo-carrasco/bcbio-nextgen-deploy)
+[![Build Status](https://secure.travis-ci.org/guillermo-carrasco/bcbio-nextgen-deploy.png)](http://travis-ci.org/guillermo-carrasco/bcbio-nextgen-deploy)
 
 ## Local installation
 
