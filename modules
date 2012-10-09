@@ -10,7 +10,7 @@
 MODS="bioinfo-tools
 bowtie/0.12.7
 samtools/0.1.12-10
-bwa/0.5.9
+bwa/0.6.2
 maq/0.7.1
 mosaik-aligner/1.0.1388
 python/2.6.6
