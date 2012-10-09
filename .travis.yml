@@ -1,15 +1,22 @@
 branches:
     only:
         - develop
+
 language: python
+
 python:
     - 2.7
+
+notifications:
+    email: false
+
 before_install:
     #Clean up some space
     - sudo apt-get clean
-    - sudo apt-get purge -y ruby mysql-common mysql-client mysql-server postgresql sqlite3 mongodb-10gen redis-server riak elasticsearch
+    - sudo apt-get purge -y ruby mysql-common mysql-client mysql-server postgresql-common postgresql-client postgresql-server-dev-all sqlite3 mongodb-10gen redis-server riak elasticsearch erlang-base libcairo2 libcario2-dev xserver-xorg-core x11-utils x11-common
     - sudo apt-get autoremove
     - sudo rm -rf /usr/share/doc
+
 install:
     - uname -a
     -  df -h
@@ -24,6 +31,10 @@ install:
     - lftp -e 'pget -n 8 http://downloads.sourceforge.net/project/snpeff/databases/v2_0_5/snpEff_v2_0_5_GRCh37.63.zip; quit'
     - sudo unzip snpEff_v2_0_5_GRCh37.63.zip -d /usr/share/snpEff/ && rm snpEff_v2_0_5_GRCh37.63.zip
     - python deploy_non_root.py install
-notifications:
-    email: false
-script: nosetests
+
+before_script:
+    - source ~/.bashrc
+    - workon master
+    - cd ~/opt/bcbb/nextgen/tests
+
+script: nosetests -s -v --with-xunit -a standard
