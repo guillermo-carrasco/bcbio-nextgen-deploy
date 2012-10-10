@@ -13,7 +13,7 @@ from fabric.operations import sudo
 import os
 
 #Define the vagrant host
-#env.hosts = ['vagrant@localhost:1234']
+env.hosts = ['vagrant@127.0.0.1:1234']
 env.user = 'vagrant'
 env.password = 'vagrant'
 codedir = '/home/vagrant/bcbio-nextgen-deploy'
