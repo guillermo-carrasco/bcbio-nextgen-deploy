@@ -13,7 +13,10 @@ from subprocess import Popen
 
 
 def _setUp(function):
-
+    """
+    Set up the environment to correctly install the pipeline depending on where the script
+    is executed. Also set up te log handler. 
+    """
     #Work with a copy of the current environment and tune it
     env = dict(os.environ)
     env['PATH'] = ':'.join([env['PATH'], pjoin(env['HOME'], 'opt/mypython/bin')])
@@ -90,7 +93,7 @@ def _install(env, config_lines):
         workon master &&
         {runtests}
         """
-
+    #Format the commands depending on the execution environment
     if inHPC: 
         install_and_create_virtualenv = install_and_create_virtualenv.format(module_unload_python='module unload python &&', python_bin='/sw/comp/python/2.7_kalkyl/bin/python')
         bash_lines = config_lines['.bashrc_HPC']
@@ -110,7 +113,7 @@ def _install(env, config_lines):
     log.info("SETTING UP VIRTUALENVWRAPPER")
     log.info("Editing .bashrc...")
     
-    #Removing non-interactive checking
+    #Removing non-interactive checking (otherwise we cannot source configuration files)
     sed_command = '''sed '/[ -z "$PS1" ] && return/d' < ~/.bashrc > ~/.bashrc_'''
     check_call(sed_command, shell=True)
     shutil.move(pjoin(home, '.bashrc_'), pjoin(home, '.bashrc'))
@@ -197,13 +200,17 @@ def _purge(env, config_lines):
     Purge the installation of the pipeline in UPPMAX.
     """
     home = env['HOME']
-    opt_dir = pjoin(home, 'opt')
-    log = logging.getLogger("UPLogger")
     inHPC = env.has_key('module')
+    opt_dir = pjoin(home, 'opt')        
+    bcbb_dir = pjoin(opt_dir, 'bcbb')
+    scilife_dir = pjoin(opt_dir, 'scilifelab')
+    modules_dir = ''
+    log = logging.getLogger("UPLogger")
 
     if inHPC:
         bash_lines = config_lines['.bashrc_HPC']
         postactivate_lines = config_lines['postactivate_HPC']
+        modules_dir = pjoin(opt_dir, 'modules')
     else:
         bash_lines = config_lines['.bashrc_non_root']
         postactivate_lines = config_lines['postactivate_non_root']
@@ -228,7 +235,7 @@ def _purge(env, config_lines):
     
     log.info("Removing created virtualenv...")
     rmvirtualenv_failed = Popen('. ~/opt/mypython/bin/virtualenvwrapper.sh && \
-                                                 rmvirtualenv master', shell=True, executable='/bin/bash', env=env).wait()
+                                                      rmvirtualenv master', shell=True, executable='/bin/bash', env=env).wait()
     if rmvirtualenv_failed:
         log.warning('No master virtualenv found, just skipping this step!')
         
@@ -249,9 +256,17 @@ def _purge(env, config_lines):
                 p.write(l)
         p.close()
 
-    if os.path.exists(opt_dir):
-        log.info('Removing ~/opt directory...')
-        shutil.rmtree(opt_dir)
+    if os.path.exists(bcbb_dir):
+        log.info('Removing ~/opt/bcbb directory...')
+        shutil.rmtree(bcbb_dir)
+
+    if os.path.exists(modules_dir):
+        log.info('Removing ~/opt/modules directory...')
+        shutil.rmtree(modules_dir)
+
+    if os.path.exists(scilife_dir):
+        log.info('Removing ~/opt/scilifelab directory...')
+        shutil.rmtree(scilife_dir)
 
 
 if __name__ == '__main__':
