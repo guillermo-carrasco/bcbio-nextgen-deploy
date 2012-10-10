@@ -5,7 +5,7 @@ Vagrant::Config.run do |config|
   # All Vagrant configuration is done here. 
 
   # We are performing a fresh install of ubuntu 12.04 (precise pangolin)
-  config.vm.box = "precise64"
+  config.vm.box = "precise32"
 
   #Needed at least 2GB of memory (requirement of picard-tools)
   config.vm.customize ["modifyvm", :id, "--memory", 2048]
