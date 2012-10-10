@@ -49,7 +49,8 @@ def _provision_VM():
     sudo('apt-get install -y snpeff-2 picard-tools bwa bowtie bowtie2 \
               freebayes fastqc-0.10.1 gatk r-base texlive texlive-latex-extra \
               tophat openjdk-6-jre samtools unzip lftp cufflinks wigtools \
-              python-pip python-dev python-setuptools python-nose git')
+              python-pip python-dev python-setuptools python-nose \
+              python-yaml git')
     run('lftp -e \'pget -n 8 http://downloads.sourceforge.net/project/snpeff/databases/v2_0_5/snpEff_v2_0_5_GRCh37.63.zip; quit\'')
     sudo('unzip snpEff_v2_0_5_GRCh37.63.zip -d /usr/share/snpEff/ && rm snpEff_v2_0_5_GRCh37.63.zip')
 
