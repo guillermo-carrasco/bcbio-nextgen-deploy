@@ -17,7 +17,7 @@ All the software and dependencies needed by the pipeline are automatically downl
 ### Running the tests
 To run the automatic deployment you just have to type:
 
-            fab -f deploy_on_vm.py deploy
+            fab -f deploy_on_vm.py install
 
 And the script will start installing the pipeline and, when finished, will run the tests.
 
