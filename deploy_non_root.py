@@ -249,7 +249,7 @@ def _purge(env, config_lines):
         p = open(pjoin(home, '.virtualenvs/postactivate'), 'r')
         postactive = p.readlines()
         p.close()
-        virtualenvLines = config_lines['postactivate']
+        virtualenvLines = postactivate_lines
         p = open(pjoin(home, '.virtualenvs/postactivate'), 'w')
         for l in postactive:
             if l.rstrip() not in virtualenvLines:
