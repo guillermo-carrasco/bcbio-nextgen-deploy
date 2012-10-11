@@ -195,9 +195,9 @@ def _install(env, config_lines):
         Popen(run_tests, shell=True, executable='/bin/bash', env=env).wait()
 
 
-def _purge(env, config_lines):
+def _uninstall(env, config_lines):
     """
-    Purge the installation of the pipeline in UPPMAX.
+    Remove the installation of the pipeline in UPPMAX.
     """
     home = env['HOME']
     inHPC = env.has_key('module')
@@ -274,7 +274,7 @@ if __name__ == '__main__':
     #Parse the funcion
     function_map = {
         'install': _install,
-        'purge': _purge,
+        'uninstall': _uninstall,
     }
 
     try:

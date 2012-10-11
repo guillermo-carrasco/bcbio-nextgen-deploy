@@ -25,10 +25,10 @@ This will:
     * This will run a job that will write the tests results in ~/opt/bcbb/nextgen/tests/tests_results.out
     * You'll find also an XML file with a summary of the test results in ~/opt/bcbb/nextgen/tests/nosetests.xml
 
-### Remove
+### Uninstall
 
-To *completely* remove the pipeline and all its configuration execute:
-            python deploy_non_root.py purge
+To *completely* uninstall the pipeline and all its configuration files/directories execute:
+            python deploy_non_root.py uninstall
 
 
 ## Local installation within a virtual machine
@@ -72,7 +72,7 @@ To install the pipeline in your machine, execute the command:
 
 *NOTE*: The installation of the pipeline itself doesn't need root permissions, but in this case, you have to take care of the installation of all the software dependencies of the pipeline. Read the [pipeline documentation][o1] for more information about what software do you need.
 
-## Important note about the purge function
+## Important note about the uninstall function
 
 This will completely remove the directories and configuration files created during the pipeline installation, including master virtualenv with all python dependencies installed, and restoring all the configuration files modified during the installation (.bashrc, etc)
 
