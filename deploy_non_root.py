@@ -187,6 +187,10 @@ def _install(env, config_lines):
     log.info("Preparing testsuite...")
     os.chdir(pjoin(bcbb_dir, 'nextgen/tests/data/automated'))
     shutil.copy(pjoin(deploy_dir, 'post_process.yaml'), 'post_process.yaml')
+    if inHPC:
+        modify_java_memory = '''sed 's/java_memory\: 1g/java_memory\: 6g/' < post_process.yaml > post_process.yaml_'''
+        Popen(modify_java_memory,  shell=True, executable='/bin/bash', env=env).wait()
+        shutil.move('post_process.yaml_', 'post_process.yaml')
     
     # Run the testsuite with reduced test data (if not in Travis-CI)
     if not env.has_key('TRAVIS'):
