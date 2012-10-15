@@ -29,7 +29,7 @@ def _setUp(function):
     logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     h1 = logging.StreamHandler()
-    h2 = logging.FileHandler('setup_uppmax.log')
+    h2 = logging.FileHandler('deploy.log')
     h1.setFormatter(formatter)
     h2.setFormatter(formatter)
     logger.addHandler(h1)
