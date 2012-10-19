@@ -165,7 +165,7 @@ def _install(env, config_lines):
     os.chdir(opt_dir)
     if os.path.exists(bcbb_dir):
         shutil.rmtree(bcbb_dir)
-    check_call('git clone --recursive http://github.com/guillermo-carrasco/bcbb.git bcbb', shell=True, env=env)
+    check_call('git clone --recursive http://github.com/SciLifeLab/bcbb.git bcbb', shell=True, env=env)
     check_call('cd bcbb && git checkout master && cd nextgen/bcbio/scilifelab && git checkout master', shell=True, env=env)
 
     log.info("Installing the pipeline...")
