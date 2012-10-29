@@ -13,6 +13,7 @@ Contact: guillermo.carrasco.hernandez@gmail.com
 """
 import os
 import subprocess
+import sets
 
 class moduleManager(object):
     """Class to list and manage the different modules in a system
@@ -36,7 +37,23 @@ class moduleManager(object):
             self.modules_version = self.env['MODULES_REL']
         except KeyError:
             self.modules_version = 'Undefined'
-        module_list = 'module ' + str(self.env['modules_shell']) + ' avait -t'
-        self.moduleList = subprocess.check_output(module_list, \
-                                                  stderr=subprocess.STDOUT)
+        module_list = 'module bash avait -t'
+        print "Obtaining information of the modules in the system..."
+        output = subprocess.check_output(module_list, shell = True, \
+                                         stderr=subprocess.STDOUT)
+        #Prepare the list of modules
+        output = output.split()
+        moduleList = dict()
+        for module in output:
+            if module[-1] != ':':
+                try:
+                    (software, version) = module.split('/')
+                except ValueError:
+                    (software, version) = module, None
+                if moduleList.has_key(software):
+                    moduleList[software].add(version)
+                else:
+                    moduleList[software] = set([version])
+        self.moduleList = moduleList
+        print "Module manager initialized correctly!"
 
