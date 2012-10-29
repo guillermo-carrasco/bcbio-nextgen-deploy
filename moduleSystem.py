@@ -54,6 +54,10 @@ class moduleManager(object):
                     moduleList[software].add(version)
                 else:
                     moduleList[software] = set([version])
-        self.moduleList = moduleList
+        self._moduleList = moduleList
         print "Module manager initialized correctly!"
 
+    def has_module(self, module):
+        """Returns true if module is in the system
+        """
+        return self._moduleList.has_key(module)
