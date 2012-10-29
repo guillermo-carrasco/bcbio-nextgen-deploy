@@ -29,7 +29,7 @@ def _setUp(function):
     logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     h1 = logging.StreamHandler()
-    h2 = logging.FileHandler('setup_uppmax.log')
+    h2 = logging.FileHandler('deploy.log')
     h1.setFormatter(formatter)
     h2.setFormatter(formatter)
     logger.addHandler(h1)
@@ -165,7 +165,7 @@ def _install(env, config_lines):
     os.chdir(opt_dir)
     if os.path.exists(bcbb_dir):
         shutil.rmtree(bcbb_dir)
-    check_call('git clone --recursive http://github.com/guillermo-carrasco/bcbb.git bcbb', shell=True, env=env)
+    check_call('git clone --recursive http://github.com/SciLifeLab/bcbb.git bcbb', shell=True, env=env)
     check_call('cd bcbb && git checkout master && cd nextgen/bcbio/scilifelab && git checkout master', shell=True, env=env)
 
     log.info("Installing the pipeline...")
@@ -186,7 +186,11 @@ def _install(env, config_lines):
     log.info("RUNNING TEST SUITE")
     log.info("Preparing testsuite...")
     os.chdir(pjoin(bcbb_dir, 'nextgen/tests/data/automated'))
-    shutil.copy(pjoin(deploy_dir, 'post_process.yaml'), 'post_process.yaml')
+    shutil.move('post_process.yaml.sample', 'post_process.yaml')
+    if inHPC:
+        modify_java_memory = '''sed 's/java_memory\: 1g/java_memory\: 6g/' < post_process.yaml > post_process.yaml_'''
+        Popen(modify_java_memory,  shell=True, executable='/bin/bash', env=env).wait()
+        shutil.move('post_process.yaml_', 'post_process.yaml')
     
     # Run the testsuite with reduced test data (if not in Travis-CI)
     if not env.has_key('TRAVIS'):

@@ -47,7 +47,7 @@ def _provision_VM():
     sudo('apt-get update')
     #Install pipeline dependencies
     sudo('apt-get install -y snpeff-2 picard-tools bwa bowtie bowtie2 \
-              freebayes fastqc-0.10.1 gatk r-base texlive texlive-latex-extra \
+              freebayes fastqc-0.10.1 gatk r-base \
               tophat openjdk-6-jre samtools unzip lftp cufflinks wigtools \
               python-pip python-dev python-setuptools python-nose \
               python-yaml git')
