@@ -21,7 +21,7 @@ codedir = '/home/vagrant/bcbio-nextgen-deploy'
 def _install_pipeline():
     """Pulls and install the pipeline within the vagrant virtual machine"""
 
-    run("git clone https://github.com/guillermo-carrasco/bcbio-nextgen-deploy.git")
+    run("git clone https://github.com/SciLifeLab/bcbio-nextgen-deploy.git")
     with cd(codedir):
         run("python deploy_non_root.py install")
 
