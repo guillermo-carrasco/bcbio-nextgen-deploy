@@ -15,7 +15,7 @@ from subprocess import Popen
 def _setUp(function):
     """
     Set up the environment to correctly install the pipeline depending on where the script
-    is executed. Also set up te log handler. 
+    is executed. Also set up te log handler.
     """
     #Work with a copy of the current environment and tune it
     env = dict(os.environ)
@@ -29,7 +29,7 @@ def _setUp(function):
     logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     h1 = logging.StreamHandler()
-    h2 = logging.FileHandler('setup_uppmax.log')
+    h2 = logging.FileHandler('deploy.log')
     h1.setFormatter(formatter)
     h2.setFormatter(formatter)
     logger.addHandler(h1)
@@ -94,7 +94,7 @@ def _install(env, config_lines):
         {runtests}
         """
     #Format the commands depending on the execution environment
-    if inHPC: 
+    if inHPC:
         install_and_create_virtualenv = install_and_create_virtualenv.format(module_unload_python='module unload python &&', python_bin='/sw/comp/python/2.7_kalkyl/bin/python')
         bash_lines = config_lines['.bashrc_HPC']
         postactivate_lines = config_lines['postactivate_HPC']
@@ -112,12 +112,12 @@ def _install(env, config_lines):
     #Modify .bahrc
     log.info("SETTING UP VIRTUALENVWRAPPER")
     log.info("Editing .bashrc...")
-    
+
     #Removing non-interactive checking (otherwise we cannot source configuration files)
     sed_command = '''sed '/[ -z "$PS1" ] && return/d' < ~/.bashrc > ~/.bashrc_'''
     check_call(sed_command, shell=True)
     shutil.move(pjoin(home, '.bashrc_'), pjoin(home, '.bashrc'))
-    
+
     bashrc = open(pjoin(home, '.bashrc'), 'a')
     for l in bash_lines:
         try:
@@ -156,7 +156,7 @@ def _install(env, config_lines):
         check_call('git clone http://github.com/SciLifeLab/modules.sf.net.git modules', shell=True, env=env)
         os.chdir(modules_dir)
         check_call('git checkout master', shell=True, env=env)
-    
+
     #################################
     # Setting up bcbb pipeline code #
     #################################
@@ -165,12 +165,12 @@ def _install(env, config_lines):
     os.chdir(opt_dir)
     if os.path.exists(bcbb_dir):
         shutil.rmtree(bcbb_dir)
-    check_call('git clone --recursive http://github.com/guillermo-carrasco/bcbb.git bcbb', shell=True, env=env)
+    check_call('git clone --recursive http://github.com/SciLifeLab/bcbb.git bcbb', shell=True, env=env)
     check_call('cd bcbb && git checkout master && cd nextgen/bcbio/scilifelab && git checkout master', shell=True, env=env)
 
     log.info("Installing the pipeline...")
     Popen(install_code_in_production, shell=True, executable='/bin/bash', env=env).wait()
-    
+
     ##########################################
     # Setting up scilifelab utility scriipts #
     ##########################################
@@ -186,8 +186,11 @@ def _install(env, config_lines):
     log.info("RUNNING TEST SUITE")
     log.info("Preparing testsuite...")
     os.chdir(pjoin(bcbb_dir, 'nextgen/tests/data/automated'))
-    shutil.copy(pjoin(deploy_dir, 'post_process.yaml'), 'post_process.yaml')
-    
+    if inHPC:
+        modify_java_memory = '''sed 's/java_memory\: 1g/java_memory\: 6g/' < post_process-sample.yaml > post_process-sample.yaml_'''
+        Popen(modify_java_memory,  shell=True, executable='/bin/bash', env=env).wait()
+        shutil.move('post_process-sample.yaml_', 'post_process-sample.yaml')
+
     # Run the testsuite with reduced test data (if not in Travis-CI)
     if not env.has_key('TRAVIS'):
         log.info("Running test suite...")
@@ -201,7 +204,7 @@ def _uninstall(env, config_lines):
     """
     home = env['HOME']
     inHPC = env.has_key('module')
-    opt_dir = pjoin(home, 'opt')        
+    opt_dir = pjoin(home, 'opt')
     bcbb_dir = pjoin(opt_dir, 'bcbb')
     scilife_dir = pjoin(opt_dir, 'scilifelab')
     modules_dir = ''
@@ -221,24 +224,24 @@ def _uninstall(env, config_lines):
             bash_lines[i] = bash_lines[i].format(pythonpath=env['PYTHONPATH'])
         except KeyError:
             pass
-    
+
     log.info('Cleaning .bashrc...')
     b = open(pjoin(home, '.bashrc'), 'r')
     bashrc = b.readlines()
     b.close()
-    
+
     b = open(pjoin(home, '.bashrc'), 'w')
     for l in bashrc:
         if l.rstrip() not in bash_lines:
             b.write(l)
     b.close()
-    
+
     log.info("Removing created virtualenv...")
     rmvirtualenv_failed = Popen('. ~/opt/mypython/bin/virtualenvwrapper.sh && \
                                                       rmvirtualenv master', shell=True, executable='/bin/bash', env=env).wait()
     if rmvirtualenv_failed:
         log.warning('No master virtualenv found, just skipping this step!')
-        
+
     try:
         os.remove(pjoin(home, '.modules'))
     except OSError:

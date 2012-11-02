@@ -5,7 +5,7 @@ This is a set of scripts to perform an automatic deployment of the next gen sequ
 * Perform a local installation of the pipeline within a virtual machine.
 * Install the pipeline locally in your machine
 
-Current build status: [![Build Status](https://secure.travis-ci.org/guillermo-carrasco/bcbio-nextgen-deploy.png)](http://travis-ci.org/guillermo-carrasco/bcbio-nextgen-deploy)
+Current build status: [![Build Status](https://secure.travis-ci.org/guillermo-carrasco/bcbio-nextgen-deploy.png?branch=master)](http://travis-ci.org/guillermo-carrasco/bcbio-nextgen-deploy)
 
 ## Installation in UPPMAX
 
