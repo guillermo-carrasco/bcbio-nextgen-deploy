@@ -15,7 +15,7 @@ from subprocess import Popen
 def _setUp(function):
     """
     Set up the environment to correctly install the pipeline depending on where the script
-    is executed. Also set up te log handler. 
+    is executed. Also set up te loggin system. 
     """
     #Work with a copy of the current environment and tune it
     env = dict(os.environ)
@@ -29,11 +29,8 @@ def _setUp(function):
     logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     h1 = logging.StreamHandler()
-    h2 = logging.FileHandler('deploy.log')
     h1.setFormatter(formatter)
-    h2.setFormatter(formatter)
     logger.addHandler(h1)
-    logger.addHandler(h2)
 
     #Config json file
     try:
@@ -166,7 +163,7 @@ def _install(env, config_lines):
     if os.path.exists(bcbb_dir):
         shutil.rmtree(bcbb_dir)
     check_call('git clone --recursive http://github.com/SciLifeLab/bcbb.git bcbb', shell=True, env=env)
-    check_call('cd bcbb && git checkout master && cd nextgen/bcbio/scilifelab && git checkout master', shell=True, env=env)
+    check_call('cd bcbb && git checkout master', shell=True, env=env)
 
     log.info("Installing the pipeline...")
     Popen(install_code_in_production, shell=True, executable='/bin/bash', env=env).wait()
