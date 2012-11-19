@@ -15,11 +15,8 @@ from subprocess import Popen
 def _setUp(function):
     """
     Set up the environment to correctly install the pipeline depending on where the script
-<<<<<<< HEAD
     is executed. Also set up te loggin system. 
-=======
     is executed. Also set up te log handler.
->>>>>>> df9ea7debdd6d2d10e94c46f5473b821c982adc1
     """
     #Work with a copy of the current environment and tune it
     env = dict(os.environ)
@@ -191,11 +188,6 @@ def _install(env, config_lines):
         modify_java_memory = '''sed 's/java_memory\: 1g/java_memory\: 6g/' < post_process-sample.yaml > post_process-sample.yaml_'''
         Popen(modify_java_memory,  shell=True, executable='/bin/bash', env=env).wait()
         shutil.move('post_process-sample.yaml_', 'post_process-sample.yaml')
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> df9ea7debdd6d2d10e94c46f5473b821c982adc1
     # Run the testsuite with reduced test data (if not in Travis-CI)
     if not env.has_key('TRAVIS'):
         log.info("Running test suite...")
