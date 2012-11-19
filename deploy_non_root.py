@@ -7,6 +7,7 @@ import logging
 import json
 import subprocess
 import platform
+import argparse
 from os.path import join as pjoin
 from subprocess import check_call
 from subprocess import Popen
@@ -43,10 +44,10 @@ def _setUp(function):
 
     config_lines = json.load(f)
     f.close()
-    function(env, config_lines)
+    eval(function)(env, config_lines)
 
 
-def _install(env, config_lines):
+def install(env, config_lines):
     """
     Installs and set up properly the bcbio-nextgen pipeline in UPPMAX.
     """
@@ -195,7 +196,7 @@ def _install(env, config_lines):
         Popen(run_tests, shell=True, executable='/bin/bash', env=env).wait()
 
 
-def _uninstall(env, config_lines):
+def uninstall(env, config_lines):
     """
     Remove the installation of the pipeline in UPPMAX.
     """
@@ -270,17 +271,11 @@ def _uninstall(env, config_lines):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description = 'Script to automatically install and configure bcbio-nextgen pipeline')
+    #Positional arguments (mutual exclusive)
+    sp = parser.add_subparsers(dest = 'command')
+    sp.add_parser('install', help = "Install the pipeline within a python virtual environment (also created with this command)")
+    sp.add_parser('uninstall', help = "Removes the pipeline and unisntall the created virtual environment (master)")
 
-    #Parse the funcion
-    function_map = {
-        'install': _install,
-        'uninstall': _uninstall,
-    }
-
-    try:
-        function = function_map[sys.argv[1]]
-    except KeyError:
-        sys.exit('ERROR: Unknown action ' + '\'' + sys.argv[1] + '\'')
-
-    #check_call the function
-    _setUp(function)
+    args = parser.parse_args()
+    _setUp(args.command)
