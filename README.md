@@ -9,6 +9,13 @@ Current build status: [![Build Status](https://secure.travis-ci.org/guillermo-ca
 
 ## Installation in UPPMAX
 
+### Requirements
+To use this script you need python 2.7 or higher. In UPPMAX you can just do a:
+
+        module load python/2.7
+
+to get python 2.7.
+
 ### Install
 
 To configure and install the pipeline in UPPMAX you just have to execute the following command (after cloning this repository):
