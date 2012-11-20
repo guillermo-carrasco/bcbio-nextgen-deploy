@@ -23,8 +23,8 @@ def _setUp(function):
     env = dict(os.environ)
     env['PATH'] = ':'.join([env['PATH'], pjoin(env['HOME'], 'opt/mypython/bin')])
     #Detect python version and set the proper PYTHONPATH
-    version = '.'.join(platform.python_version_tuple()[0:2])
-    env['PYTHONPATH'] = pjoin(env['HOME'], 'opt/mypython/lib/python{version}/site-packages').format(version=version)
+    env['PYTHON_VERSION'] = '.'.join(platform.python_version_tuple()[0:2])
+    env['PYTHONPATH'] = pjoin(env['HOME'], 'opt/mypython/lib/python{version}/site-packages').format(version=env['PYTHON_VERSION'])
 
     #Prepare the logger (writting to a file and to stdout)
     logger = logging.getLogger("UPLogger")
@@ -64,11 +64,11 @@ def install(env, config_lines):
 
     #Bash commands
     install_and_create_virtualenv ='''
-        easy_install --prefix=~/opt/mypython pip &&
+        ~/opt/mypython/lib/python{python_version}/site-packages/easy_install --prefix=~/opt/mypython pip &&
         pip install virtualenvwrapper --install-option="--prefix=~/opt/mypython" &&
         . ~/.bashrc &&
         {module_unload_python}
-        mkvirtualenv --python={python_bin} master
+        mkvirtualenv master
         '''
 
     install_code_in_production = """
@@ -94,12 +94,14 @@ def install(env, config_lines):
         """
     #Format the commands depending on the execution environment
     if inHPC:
-        install_and_create_virtualenv = install_and_create_virtualenv.format(module_unload_python='module unload python &&', python_bin='/sw/comp/python/2.7_kalkyl/bin/python')
+        install_and_create_virtualenv = install_and_create_virtualenv.format(python_version = env['PYTHON_VERSION'], \
+                                                                             module_unload_python='module unload python &&')
         bash_lines = config_lines['.bashrc_HPC']
         postactivate_lines = config_lines['postactivate_HPC']
         run_tests = run_tests.format(runtests='python ~/opt/bcbb/nextgen/tests/runtests_drmaa.py')
     else:
-        install_and_create_virtualenv = install_and_create_virtualenv.format(module_unload_python='', python_bin='/usr/bin/python')
+        install_and_create_virtualenv = install_and_create_virtualenv.format(python_version = env['PYTHON_VERSION'], \
+                                                                             module_unload_python='')
         bash_lines = config_lines['.bashrc_non_root']
         postactivate_lines = config_lines['postactivate_non_root']
         run_tests = run_tests.format(runtests='nosetests -s -v --with-xunit -a standard')
@@ -128,10 +130,20 @@ def install(env, config_lines):
 
     ###################################
 
-    log.info("Installing virtualenvwrapper and creating a virtual environment \"master\" for the production pipeline...")
     python_dir = env['PYTHONPATH']
     if not os.path.exists(python_dir):
         os.makedirs(python_dir)
+
+    #Download easy_install locally, as it is not a standard library
+    log.info("Installing easy_install locally, as it is not an standard library...")
+    setuptools_url = "http://pypi.python.org/packages/{python_version}/s/setuptools/setuptools-0.6c11-py{python_version}.egg"
+    setuptools_url = setuptools_url.format(python_version = env['PYTHON_VERSION'])
+    egg = setuptools_url.split('/')[-1]
+    download_and_install = 'wget ' + setuptools_url + ' && sh ' + egg + ' --install-dir=' + env['PYTHONPATH']
+    Popen(download_and_install, shell=True, executable='/bin/bash', env=env).wait()
+
+    #Now we can download pip and keep on going
+    log.info("Installing virtualenvwrapper and creating a virtual environment \"master\" for the production pipeline...")
     Popen(install_and_create_virtualenv, shell=True, executable='/bin/bash', env=env).wait()
 
     #Modify ~/.virtualenvs/postactivate...
