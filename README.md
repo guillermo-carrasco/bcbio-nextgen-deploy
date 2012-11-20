@@ -32,6 +32,13 @@ This will:
     * This will run a job that will write the tests results in ~/opt/bcbb/nextgen/tests/tests_results.out
     * You'll find also an XML file with a summary of the test results in ~/opt/bcbb/nextgen/tests/nosetests.xml
 
+You can also install a specific version of the pipeline using the -v option. To do so, you just have to specify a commit sha
+when running the installation script, like this:
+
+        python deploy_non_root.py -v 1116 install
+
+And the script will checkout for this commit before installing.
+
 ### Uninstall
 
 To *completely* uninstall the pipeline and all its configuration files/directories execute:
