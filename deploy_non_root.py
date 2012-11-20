@@ -8,12 +8,13 @@ import json
 import subprocess
 import platform
 import argparse
+import urllib2
 from os.path import join as pjoin
 from subprocess import check_call
 from subprocess import Popen
 
 
-def _setUp(function):
+def _setUp(function, version):
     """
     Set up the environment to correctly install the pipeline depending on where the script
     is executed. Also set up te loggin system. 
@@ -34,20 +35,30 @@ def _setUp(function):
     h1.setFormatter(formatter)
     logger.addHandler(h1)
 
+    #Check for the correctness of the version provided
+    if version:
+        try:
+            commit = 'https://github.com/SciLifeLab/bcbb/commit/' + version
+            f = urllib2.urlopen(urllib2.Request(commit))
+        except:
+            sys.exit("ERROR: The provided commit hash doesn't seems to be valid")
+
     #Config json file
     try:
         f = open('env.json', 'r')
     except IOError:
         print "ERROR: Could not find env.json file."
-        print "Try to do a \"git pull origin master\" to restore the file."
-        raise
+        sys.exit("Try to do a \"git pull origin master\" to restore the file.")
 
     config_lines = json.load(f)
     f.close()
-    eval(function)(env, config_lines)
+    if function == 'install':
+        eval(function)(env, config_lines, version)
+    else:
+        eval(function)(env, config_lines)
 
 
-def install(env, config_lines):
+def install(env, config_lines, version):
     """
     Installs and set up properly the bcbio-nextgen pipeline in UPPMAX.
     """
@@ -176,8 +187,10 @@ def install(env, config_lines):
     os.chdir(opt_dir)
     if os.path.exists(bcbb_dir):
         shutil.rmtree(bcbb_dir)
-    check_call('git clone --recursive http://github.com/SciLifeLab/bcbb.git bcbb', shell=True, env=env)
-    check_call('cd bcbb && git checkout master', shell=True, env=env)
+    if not version:
+        version = 'master'
+    check_call('git clone http://github.com/SciLifeLab/bcbb.git bcbb', shell=True, env=env)
+    check_call('cd bcbb && git checkout ' + version, shell=True, env=env)
 
     log.info("Installing the pipeline...")
     Popen(install_code_in_production, shell=True, executable='/bin/bash', env=env).wait()
@@ -288,6 +301,8 @@ if __name__ == '__main__':
     sp = parser.add_subparsers(dest = 'command')
     sp.add_parser('install', help = "Install the pipeline within a python virtual environment (also created with this command)")
     sp.add_parser('uninstall', help = "Removes the pipeline and unisntall the created virtual environment (master)")
+    #Optional arguments
+    parser.add_argument('-v', '--version', help = "Choose a version of the pipeline to pull. Use a commit hash as version")
 
     args = parser.parse_args()
-    _setUp(args.command)
+    _setUp(args.command, args.version)
