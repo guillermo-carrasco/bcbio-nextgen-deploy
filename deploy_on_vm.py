@@ -10,11 +10,9 @@ from __future__ import with_statement
 from fabric.api import *
 from fabric.contrib.console import confirm
 from fabric.operations import sudo
-import os
 import argparse
 
 #Define the vagrant host
-env.hosts = []
 env.user = 'vagrant'
 env.password = 'vagrant'
 codedir = '/home/vagrant/bcbio-nextgen-deploy'
@@ -22,7 +20,7 @@ codedir = '/home/vagrant/bcbio-nextgen-deploy'
 def _install_pipeline():
     """Pulls and install the pipeline within the vagrant virtual machine"""
 
-    run("git clone https://github.com/guillermo-carrasco/bcbio-nextgen-deploy.git")
+    run("git clone https://github.com/SciLifeLab/bcbio-nextgen-deploy.git")
     with cd(codedir):
         run("python deploy_non_root.py install")
 
@@ -41,6 +39,7 @@ def _install_VM():
 def _provision_VM():
     """Install necessary software to run the pipeline in the virtual machine"""
     #Add repositories
+    print env.hosts
     sudo('apt-get update')
     sudo('apt-get install -y python-software-properties')
     sudo('add-apt-repository -y ppa:scilifelab/scilifelab')
@@ -56,29 +55,13 @@ def _provision_VM():
     sudo('unzip snpEff_v2_0_5_GRCh37.63.zip -d /usr/share/snpEff/ && rm snpEff_v2_0_5_GRCh37.63.zip')
 
 
-def install(hosts):
-    if hosts:
-        vms = []
-        for ip in hosts.split(','):
-            vms.append('vagrant@' + ip)
-        [env.hosts.append(host) for host in vms]
-    else:
+def install():
+    if not env.hosts:
         env.hosts = ['vagrant@127.0.0.1:1234']
-        print("Installing the Virtual Machine...")
-        _install_VM()
+    
+    print "Installing the pipeline in: " + str(env.host)
+    print "Provisioning Virtual Machine with software dependencies..."
+    _provision_VM()
+    print "Installing the pipeline..."
+    _install_pipeline()
 
-    print("DONE")
-    print("Provisioning Virtual Machine with software dependencies...")
-    #_provision_VM()
-    print("Installing the pipeline and running the testsuite...")
-    #_install_pipeline()
-    print("DONE")
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description = "Installs the bcbio-nextgen pipeline in one or several virtual machines created with vagrant")
-    sp = parser.add_subparsers(dest = 'command')
-    sp.add_parser('install', help = "Install the pipeline within one or several virtual machines")
-    parser.add_argument('-l', '--list', help = "List of vagrant machines in which to install the pipeline. \
-                                                The list has to be like this: IP_MACHINE_1,IP_MACHINE_2...")
-    args = parser.parse_args()
-    install(args.list)
