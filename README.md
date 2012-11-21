@@ -55,14 +55,25 @@ All the software and dependencies needed by the pipeline are automatically downl
 
 Furthermore, in order to correctly execute all the tests, please *have in mind that 2GB of memory are reserved for the Virtual Machine when it's on*.
 
-### Installing the pipeline and running the test suite
+### Installing the pipeline and running the tests
 To install the virtual machine, the pipeline within it and run the tests, just type:
 
             fab -f deploy_on_vm.py install
 
-And the script will start installing the virtual machine and the pipeline and, when finished, will run the tests.
+And the script will start installing the virtual machine and the pipeline. When the installation is finished, the tests will run.
+
+### Installing in several virtual machines
+If you have a cluster of __vagrant__ virtual machines configured in [host-only networking][o6] mode, you can install the pipeline in all of them just specifying the "comma separated" list of IPs:
+
+    fab -f deploy_on_vm.py -H 10.10.10.3,10.10.10.4 install
+
+This will install the pipeline and run the tests in all of the specified machines.
 
 ###Notes
+#### For the multi-VM installation
+* It is necessary that the virtual machines specified in the list are Vagrant VMs, or at least, they need to have a user _vagrant_ (with password also _vagrant_), as the fabric calls are executed with this user.
+* If you're using your own machines (not creating a new one with the script), please take into account that the script has been tested and prepared for Ubuntu 12.04, other operating systems are not officially supported.
+#### About Vagrant in general
 After the installation has finished and the tests have run, you can connect to the VM and take a look at the tests results using the command:
 
             vagrant ssh
@@ -95,3 +106,4 @@ This will completely remove the directories and configuration files created duri
 [o3]: http://docs.fabfile.org/en/1.4.3/index.html
 [o4]: http://vagrantup.com/v1/docs/getting-started/index.html
 [o5]: http://www.uppmax.uu.se/
+[o6]: http://vagrantup.com/v1/docs/host_only_networking.html
