@@ -14,7 +14,7 @@ from subprocess import check_call
 from subprocess import Popen
 
 
-def _setUp(function, version):
+def _setUp(function, args):
     """
     Set up the environment to correctly install the pipeline depending on where the script
     is executed. Also set up te loggin system. 
@@ -26,6 +26,8 @@ def _setUp(function, version):
     #Detect python version and set the proper PYTHONPATH
     env['PYTHON_VERSION'] = '.'.join(platform.python_version_tuple()[0:2])
     env['PYTHONPATH'] = pjoin(env['HOME'], 'opt/mypython/lib/python{version}/site-packages').format(version=env['PYTHON_VERSION'])
+    version = args.version
+    tests = not args.no_tests
 
     #Prepare the logger (writting to a file and to stdout)
     logger = logging.getLogger("UPLogger")
@@ -52,13 +54,14 @@ def _setUp(function, version):
 
     config_lines = json.load(f)
     f.close()
+
     if function == 'install':
-        eval(function)(env, config_lines, version)
+        eval(function)(env, config_lines, version, tests)
     else:
         eval(function)(env, config_lines)
 
 
-def install(env, config_lines, version):
+def install(env, config_lines, version, tests):
     """
     Installs and set up properly the bcbio-nextgen pipeline in UPPMAX.
     """
@@ -207,18 +210,19 @@ def install(env, config_lines, version):
     ######################
     # Running test suite #
     ######################
-    log.info("RUNNING TEST SUITE")
-    log.info("Preparing testsuite...")
-    os.chdir(pjoin(bcbb_dir, 'nextgen/tests/data/automated'))
-    if inHPC:
-        modify_java_memory = '''sed 's/java_memory\: 1g/java_memory\: 6g/' < post_process-sample.yaml > post_process-sample.yaml_'''
-        Popen(modify_java_memory,  shell=True, executable='/bin/bash', env=env).wait()
-        shutil.move('post_process-sample.yaml_', 'post_process-sample.yaml')
-    # Run the testsuite with reduced test data (if not in Travis-CI)
-    if not env.has_key('TRAVIS'):
-        log.info("Running test suite...")
-        os.chdir(pjoin(bcbb_dir, 'nextgen/tests'))
-        Popen(run_tests, shell=True, executable='/bin/bash', env=env).wait()
+    if tests:
+        log.info("RUNNING TEST SUITE")
+        log.info("Preparing testsuite...")
+        os.chdir(pjoin(bcbb_dir, 'nextgen/tests/data/automated'))
+        if inHPC:
+            modify_java_memory = '''sed 's/java_memory\: 1g/java_memory\: 6g/' < post_process-sample.yaml > post_process-sample.yaml_'''
+            Popen(modify_java_memory,  shell=True, executable='/bin/bash', env=env).wait()
+            shutil.move('post_process-sample.yaml_', 'post_process-sample.yaml')
+        # Run the testsuite with reduced test data (if not in Travis-CI)
+        if not env.has_key('TRAVIS'):
+            log.info("Running test suite...")
+            os.chdir(pjoin(bcbb_dir, 'nextgen/tests'))
+            Popen(run_tests, shell=True, executable='/bin/bash', env=env).wait()
 
 
 def uninstall(env, config_lines):
@@ -303,6 +307,7 @@ if __name__ == '__main__':
     sp.add_parser('uninstall', help = "Removes the pipeline and unisntall the created virtual environment (master)")
     #Optional arguments
     parser.add_argument('-v', '--version', help = "Choose a version of the pipeline to pull. Use a commit hash as version")
+    parser.add_argument('--no-tests', action = 'store_true', help = "If set, the test suite is not run")
 
     args = parser.parse_args()
-    _setUp(args.command, args.version)
+    _setUp(args.command, args)
