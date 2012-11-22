@@ -10,7 +10,6 @@ from __future__ import with_statement
 from fabric.api import *
 from fabric.contrib.console import confirm
 from fabric.operations import sudo
-import argparse
 
 #Define the vagrant host
 env.user = 'vagrant'
@@ -22,7 +21,10 @@ def _install_pipeline():
 
     run("git clone https://github.com/SciLifeLab/bcbio-nextgen-deploy.git")
     with cd(codedir):
-        run("python deploy_non_root.py install")
+        if len(env.hosts) > 1:
+            run("python deploy_non_root.py --no-tests install")
+        else:
+            run("python deploy_non_root.py install")
 
 
 def _install_VM():
@@ -58,7 +60,8 @@ def _provision_VM():
 def install():
     if not env.hosts:
         env.hosts = ['vagrant@127.0.0.1:1234']
-    
+        print "Creating virtual machine..."
+        _install_VM()
     print "Installing the pipeline in: " + str(env.host)
     print "Provisioning Virtual Machine with software dependencies..."
     _provision_VM()
