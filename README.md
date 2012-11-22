@@ -39,6 +39,12 @@ when running the installation script, like this:
 
 And the script will checkout for this commit before installing.
 
+#### Notes
+If you don't want to run the test suite after the installation, you can specify this:
+
+    python deploy_non_root.py --no-tests install
+
+
 ### Uninstall
 
 To *completely* uninstall the pipeline and all its configuration files/directories execute:
