@@ -1,7 +1,0 @@
-26-10-2012	Guillermo Carrasco	<guillermo.carrasco@scilifelab.se>
-
-	* Added this changelog
-
-	* Supress the logging in a file
-
-    * Implementing moduleSystem module
