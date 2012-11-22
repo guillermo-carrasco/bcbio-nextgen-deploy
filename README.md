@@ -73,12 +73,13 @@ If you have a cluster of __vagrant__ virtual machines configured in [host-only n
 
     fab -f deploy_on_vm.py -H 10.10.10.3,10.10.10.4 install
 
-This will install the pipeline and run the tests in all of the specified machines.
+This will install the pipeline in all of the specified machines.
 
 ###Notes
 #### For the multi-VM installation
 * It is necessary that the virtual machines specified in the list are Vagrant VMs, or at least, they need to have a user _vagrant_ (with password also _vagrant_), as the fabric calls are executed with this user.
 * If you're using your own machines (not creating a new one with the script), please take into account that the script has been tested and prepared for Ubuntu 12.04, other operating systems are not officially supported.
+* When installing in a multi-VM environment the test suite is not run. You can run the tests manually connecting to each VM and following the instructions descrived in the [pipeline documentation][o1]. This is due to the fact that the tests are quite large. If we run the test suite in each machine after the installation, the tests executions on the different machines will probably overlap, leading to a very high system load.
 
 #### About Vagrant in general
 After the installation has finished and the tests have run, you can connect to the VM and take a look at the tests results using the command:
