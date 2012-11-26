@@ -9,6 +9,13 @@ Current build status: [![Build Status](https://secure.travis-ci.org/guillermo-ca
 
 ## Installation in UPPMAX
 
+### Requirements
+To use this script you need python 2.7 or higher. In UPPMAX you can just do a:
+
+        module load python/2.7
+
+to get python 2.7.
+
 ### Install
 
 To configure and install the pipeline in UPPMAX you just have to execute the following command (after cloning this repository):
@@ -24,6 +31,19 @@ This will:
 * Run the testsuite in background:
     * This will run a job that will write the tests results in ~/opt/bcbb/nextgen/tests/tests_results.out
     * You'll find also an XML file with a summary of the test results in ~/opt/bcbb/nextgen/tests/nosetests.xml
+
+You can also install a specific version of the pipeline using the -v option. To do so, you just have to specify a commit sha
+when running the installation script, like this:
+
+        python deploy_non_root.py -v 1116 install
+
+And the script will checkout for this commit before installing.
+
+#### Notes
+If you don't want to run the test suite after the installation, you can specify this:
+
+    python deploy_non_root.py --no-tests install
+
 
 ### Uninstall
 
@@ -41,14 +61,27 @@ All the software and dependencies needed by the pipeline are automatically downl
 
 Furthermore, in order to correctly execute all the tests, please *have in mind that 2GB of memory are reserved for the Virtual Machine when it's on*.
 
-### Installing the pipeline and running the test suite
+### Installing the pipeline and running the tests
 To install the virtual machine, the pipeline within it and run the tests, just type:
 
             fab -f deploy_on_vm.py install
 
-And the script will start installing the virtual machine and the pipeline and, when finished, will run the tests.
+And the script will start installing the virtual machine and the pipeline. When the installation is finished, the tests will run.
+
+### Installing in several virtual machines
+If you have a cluster of __vagrant__ virtual machines configured in [host-only networking][o6] mode, you can install the pipeline in all of them just specifying the "comma separated" list of IPs:
+
+    fab -f deploy_on_vm.py -H 10.10.10.3,10.10.10.4 install
+
+This will install the pipeline in all of the specified machines.
 
 ###Notes
+#### For the multi-VM installation
+* It is necessary that the virtual machines specified in the list are Vagrant VMs, or at least, they need to have a user _vagrant_ (with password also _vagrant_), as the fabric calls are executed with this user.
+* If you're using your own machines (not creating a new one with the script), please take into account that the script has been tested and prepared for Ubuntu 12.04, other operating systems are not officially supported.
+* When installing in a multi-VM environment the test suite is not run. You can run the tests manually connecting to each VM and following the instructions descrived in the [pipeline documentation][o1]. This is due to the fact that the tests are quite large. If we run the test suite in each machine after the installation, the tests executions on the different machines will probably overlap, leading to a very high system load.
+
+#### About Vagrant in general
 After the installation has finished and the tests have run, you can connect to the VM and take a look at the tests results using the command:
 
             vagrant ssh
@@ -81,3 +114,4 @@ This will completely remove the directories and configuration files created duri
 [o3]: http://docs.fabfile.org/en/1.4.3/index.html
 [o4]: http://vagrantup.com/v1/docs/getting-started/index.html
 [o5]: http://www.uppmax.uu.se/
+[o6]: http://vagrantup.com/v1/docs/host_only_networking.html
