@@ -10,10 +10,8 @@ from __future__ import with_statement
 from fabric.api import *
 from fabric.contrib.console import confirm
 from fabric.operations import sudo
-import os
 
 #Define the vagrant host
-env.hosts = ['vagrant@127.0.0.1:1234']
 env.user = 'vagrant'
 env.password = 'vagrant'
 codedir = '/home/vagrant/bcbio-nextgen-deploy'
@@ -23,7 +21,10 @@ def _install_pipeline():
 
     run("git clone https://github.com/SciLifeLab/bcbio-nextgen-deploy.git")
     with cd(codedir):
-        run("python deploy_non_root.py install")
+        if len(env.hosts) > 1:
+            run("python deploy_non_root.py --no-tests install")
+        else:
+            run("python deploy_non_root.py install")
 
 
 def _install_VM():
@@ -40,6 +41,7 @@ def _install_VM():
 def _provision_VM():
     """Install necessary software to run the pipeline in the virtual machine"""
     #Add repositories
+    print env.hosts
     sudo('apt-get update')
     sudo('apt-get install -y python-software-properties')
     sudo('add-apt-repository -y ppa:scilifelab/scilifelab')
@@ -55,13 +57,14 @@ def _provision_VM():
     sudo('unzip snpEff_v2_0_5_GRCh37.63.zip -d /usr/share/snpEff/ && rm snpEff_v2_0_5_GRCh37.63.zip')
 
 
-## Main method
 def install():
-    print("Installing the Virtual Machine...")
-    _install_VM()
-    print("DONE")
-    print("Provisioning Virtual Machine with software dependencies...")
+    if not env.hosts:
+        env.hosts = ['vagrant@127.0.0.1:1234']
+        print "Creating virtual machine..."
+        _install_VM()
+    print "Installing the pipeline in: " + str(env.host)
+    print "Provisioning Virtual Machine with software dependencies..."
     _provision_VM()
-    print("Installing the pipeline and running the testsuite...")
+    print "Installing the pipeline..."
     _install_pipeline()
-    print("DONE")
+

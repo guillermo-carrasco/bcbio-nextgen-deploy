@@ -7,12 +7,14 @@ import logging
 import json
 import subprocess
 import platform
+import argparse
+import urllib2
 from os.path import join as pjoin
 from subprocess import check_call
 from subprocess import Popen
 
 
-def _setUp(function):
+def _setUp(function, args):
     """
     Set up the environment to correctly install the pipeline depending on where the script
     is executed. Also set up te loggin system. 
@@ -22,8 +24,10 @@ def _setUp(function):
     env = dict(os.environ)
     env['PATH'] = ':'.join([env['PATH'], pjoin(env['HOME'], 'opt/mypython/bin')])
     #Detect python version and set the proper PYTHONPATH
-    version = '.'.join(platform.python_version_tuple()[0:2])
-    env['PYTHONPATH'] = pjoin(env['HOME'], 'opt/mypython/lib/python{version}/site-packages').format(version=version)
+    env['PYTHON_VERSION'] = '.'.join(platform.python_version_tuple()[0:2])
+    env['PYTHONPATH'] = pjoin(env['HOME'], 'opt/mypython/lib/python{version}/site-packages').format(version=env['PYTHON_VERSION'])
+    version = args.version
+    tests = not args.no_tests
 
     #Prepare the logger (writting to a file and to stdout)
     logger = logging.getLogger("UPLogger")
@@ -33,20 +37,31 @@ def _setUp(function):
     h1.setFormatter(formatter)
     logger.addHandler(h1)
 
+    #Check for the correctness of the version provided
+    if version:
+        try:
+            commit = 'https://github.com/SciLifeLab/bcbb/commit/' + version
+            f = urllib2.urlopen(urllib2.Request(commit))
+        except:
+            sys.exit("ERROR: The provided commit hash doesn't seems to be valid")
+
     #Config json file
     try:
         f = open('env.json', 'r')
     except IOError:
         print "ERROR: Could not find env.json file."
-        print "Try to do a \"git pull origin master\" to restore the file."
-        raise
+        sys.exit("Try to do a \"git pull origin master\" to restore the file.")
 
     config_lines = json.load(f)
     f.close()
-    function(env, config_lines)
+
+    if function == 'install':
+        eval(function)(env, config_lines, version, tests)
+    else:
+        eval(function)(env, config_lines)
 
 
-def _install(env, config_lines):
+def install(env, config_lines, version, tests):
     """
     Installs and set up properly the bcbio-nextgen pipeline in UPPMAX.
     """
@@ -63,11 +78,11 @@ def _install(env, config_lines):
 
     #Bash commands
     install_and_create_virtualenv ='''
-        easy_install --prefix=~/opt/mypython pip &&
+        ~/opt/mypython/lib/python{python_version}/site-packages/easy_install --prefix=~/opt/mypython pip &&
         pip install virtualenvwrapper --install-option="--prefix=~/opt/mypython" &&
         . ~/.bashrc &&
         {module_unload_python}
-        mkvirtualenv --python={python_bin} master
+        mkvirtualenv master
         '''
 
     install_code_in_production = """
@@ -93,12 +108,14 @@ def _install(env, config_lines):
         """
     #Format the commands depending on the execution environment
     if inHPC:
-        install_and_create_virtualenv = install_and_create_virtualenv.format(module_unload_python='module unload python &&', python_bin='/sw/comp/python/2.7_kalkyl/bin/python')
+        install_and_create_virtualenv = install_and_create_virtualenv.format(python_version = env['PYTHON_VERSION'], \
+                                                                             module_unload_python='module unload python &&')
         bash_lines = config_lines['.bashrc_HPC']
         postactivate_lines = config_lines['postactivate_HPC']
         run_tests = run_tests.format(runtests='python ~/opt/bcbb/nextgen/tests/runtests_drmaa.py')
     else:
-        install_and_create_virtualenv = install_and_create_virtualenv.format(module_unload_python='', python_bin='/usr/bin/python')
+        install_and_create_virtualenv = install_and_create_virtualenv.format(python_version = env['PYTHON_VERSION'], \
+                                                                             module_unload_python='')
         bash_lines = config_lines['.bashrc_non_root']
         postactivate_lines = config_lines['postactivate_non_root']
         run_tests = run_tests.format(runtests='nosetests -s -v --with-xunit -a standard')
@@ -127,10 +144,20 @@ def _install(env, config_lines):
 
     ###################################
 
-    log.info("Installing virtualenvwrapper and creating a virtual environment \"master\" for the production pipeline...")
     python_dir = env['PYTHONPATH']
     if not os.path.exists(python_dir):
         os.makedirs(python_dir)
+
+    #Download easy_install locally, as it is not a standard library
+    log.info("Installing easy_install locally, as it is not an standard library...")
+    setuptools_url = "http://pypi.python.org/packages/{python_version}/s/setuptools/setuptools-0.6c11-py{python_version}.egg"
+    setuptools_url = setuptools_url.format(python_version = env['PYTHON_VERSION'])
+    egg = setuptools_url.split('/')[-1]
+    download_and_install = 'wget ' + setuptools_url + ' && sh ' + egg + ' --install-dir=' + env['PYTHONPATH']
+    Popen(download_and_install, shell=True, executable='/bin/bash', env=env).wait()
+
+    #Now we can download pip and keep on going
+    log.info("Installing virtualenvwrapper and creating a virtual environment \"master\" for the production pipeline...")
     Popen(install_and_create_virtualenv, shell=True, executable='/bin/bash', env=env).wait()
 
     #Modify ~/.virtualenvs/postactivate...
@@ -163,8 +190,10 @@ def _install(env, config_lines):
     os.chdir(opt_dir)
     if os.path.exists(bcbb_dir):
         shutil.rmtree(bcbb_dir)
-    check_call('git clone --recursive http://github.com/SciLifeLab/bcbb.git bcbb', shell=True, env=env)
-    check_call('cd bcbb && git checkout master', shell=True, env=env)
+    if not version:
+        version = 'master'
+    check_call('git clone http://github.com/SciLifeLab/bcbb.git bcbb', shell=True, env=env)
+    check_call('cd bcbb && git checkout ' + version, shell=True, env=env)
 
     log.info("Installing the pipeline...")
     Popen(install_code_in_production, shell=True, executable='/bin/bash', env=env).wait()
@@ -181,21 +210,22 @@ def _install(env, config_lines):
     ######################
     # Running test suite #
     ######################
-    log.info("RUNNING TEST SUITE")
-    log.info("Preparing testsuite...")
-    os.chdir(pjoin(bcbb_dir, 'nextgen/tests/data/automated'))
-    if inHPC:
-        modify_java_memory = '''sed 's/java_memory\: 1g/java_memory\: 6g/' < post_process-sample.yaml > post_process-sample.yaml_'''
-        Popen(modify_java_memory,  shell=True, executable='/bin/bash', env=env).wait()
-        shutil.move('post_process-sample.yaml_', 'post_process-sample.yaml')
-    # Run the testsuite with reduced test data (if not in Travis-CI)
-    if not env.has_key('TRAVIS'):
-        log.info("Running test suite...")
-        os.chdir(pjoin(bcbb_dir, 'nextgen/tests'))
-        Popen(run_tests, shell=True, executable='/bin/bash', env=env).wait()
+    if tests:
+        log.info("RUNNING TEST SUITE")
+        log.info("Preparing testsuite...")
+        os.chdir(pjoin(bcbb_dir, 'nextgen/tests/data/automated'))
+        if inHPC:
+            modify_java_memory = '''sed 's/java_memory\: 1g/java_memory\: 6g/' < post_process-sample.yaml > post_process-sample.yaml_'''
+            Popen(modify_java_memory,  shell=True, executable='/bin/bash', env=env).wait()
+            shutil.move('post_process-sample.yaml_', 'post_process-sample.yaml')
+        # Run the testsuite with reduced test data (if not in Travis-CI)
+        if not env.has_key('TRAVIS'):
+            log.info("Running test suite...")
+            os.chdir(pjoin(bcbb_dir, 'nextgen/tests'))
+            Popen(run_tests, shell=True, executable='/bin/bash', env=env).wait()
 
 
-def _uninstall(env, config_lines):
+def uninstall(env, config_lines):
     """
     Remove the installation of the pipeline in UPPMAX.
     """
@@ -270,17 +300,14 @@ def _uninstall(env, config_lines):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description = 'Script to automatically install and configure bcbio-nextgen pipeline')
+    #Positional arguments (mutual exclusive)
+    sp = parser.add_subparsers(dest = 'command')
+    sp.add_parser('install', help = "Install the pipeline within a python virtual environment (also created with this command)")
+    sp.add_parser('uninstall', help = "Removes the pipeline and unisntall the created virtual environment (master)")
+    #Optional arguments
+    parser.add_argument('-v', '--version', help = "Choose a version of the pipeline to pull. Use a commit hash as version")
+    parser.add_argument('--no-tests', action = 'store_true', help = "If set, the test suite is not run")
 
-    #Parse the funcion
-    function_map = {
-        'install': _install,
-        'uninstall': _uninstall,
-    }
-
-    try:
-        function = function_map[sys.argv[1]]
-    except KeyError:
-        sys.exit('ERROR: Unknown action ' + '\'' + sys.argv[1] + '\'')
-
-    #check_call the function
-    _setUp(function)
+    args = parser.parse_args()
+    _setUp(args.command, args)
