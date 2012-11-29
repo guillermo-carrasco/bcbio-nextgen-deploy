@@ -90,6 +90,7 @@ def install(env, config_lines, version, tests):
         cd ~/opt/bcbb/nextgen &&
         workon master &&
         pip install numpy &&
+        pip install cython &&
         python setup.py install
         """
 
