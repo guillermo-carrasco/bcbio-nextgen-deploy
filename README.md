@@ -109,9 +109,20 @@ To install the pipeline in your machine, execute the command:
 
 This will completely remove the directories and configuration files created during the pipeline installation, including master virtualenv with all python dependencies installed, and restoring all the configuration files modified during the installation (.bashrc, etc)
 
+##After the installation
+
+In order to be able to use and install any python module without requiring root
+permissions, a python [virtual environment][o7] is installed. This virtual environment
+is called __master__, and before using the pipeline you have to activate it:
+
+        workon master
+
+Then, the pipeline can be used normally.
+
 [o1]: https://github.com/scilifelab/bcbb/tree/master/nextgen
 [o2]: http://vagrantup.com/
 [o3]: http://docs.fabfile.org/en/1.4.3/index.html
 [o4]: http://vagrantup.com/v1/docs/getting-started/index.html
 [o5]: http://www.uppmax.uu.se/
 [o6]: http://vagrantup.com/v1/docs/host_only_networking.html
+[o7]: http://pypi.python.org/pypi/virtualenv
