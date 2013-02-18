@@ -23,7 +23,7 @@ install:
     - lftp -e 'pget -n 8 http://downloads.sourceforge.net/project/snpeff/databases/v2_0_5/snpEff_v2_0_5_GRCh37.63.zip; quit'
     - sudo unzip snpEff_v2_0_5_GRCh37.63.zip -d /usr/share/snpEff/ && rm snpEff_v2_0_5_GRCh37.63.zip
     #Temporal solution to travis issue #155
-    - sudo chmod 777 /dev/shm
+    - sudo rm -rf /dev/shm && sudo ln -s /run/shm /dev/shm
     - python deploy_non_root.py install
 
 notifications:
