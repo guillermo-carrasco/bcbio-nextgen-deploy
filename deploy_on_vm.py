@@ -60,7 +60,7 @@ def _provision_VM():
 def install():
     if not env.hosts:
         print "Creating virtual machine..."
-        env.hosts = ['vagrant@127.0.0.1:1234']
+        env.hosts = ['127.0.0.1:1234']
         _install_VM()
     print "Installing the pipeline in: " + str(env.host)
     print "Provisioning Virtual Machine with software dependencies..."
