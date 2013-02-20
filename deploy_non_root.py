@@ -217,7 +217,7 @@ def install(env, config_lines, version, tests):
         else:
             #Try increasing the HEAP space as now travis have 3 GB of memory and 64 bits workers
             log.info("INCREASING JAVA HEAP MEMORY TO 2G")
-            modify_java_memory = '''sed 's/java_memory\: 1g/java_memory\: 2g/' < post_process-sample.yaml > post_process-sample.yaml_'''
+            modify_java_memory = '''sed 's/java_memory\: 1g/java_memory\: 3g/' < post_process-sample.yaml > post_process-sample.yaml_'''
             Popen(modify_java_memory,  shell=True, executable='/bin/bash', env=env).wait()
             shutil.move('post_process-sample.yaml_', 'post_process-sample.yaml')
 
