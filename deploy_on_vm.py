@@ -48,7 +48,7 @@ def _provision_VM():
     sudo('add-apt-repository -y ppa:debian-med/ppa')
     sudo('apt-get update')
     #Install pipeline dependencies
-    sudo('apt-get install -y snpeff-2 picard-tools bwa bowtie bowtie2 \
+    sudo('apt-get install -y snpeff-2 libsam-java=1.74-1ubuntu1 picard-tools=1.74-1ubuntu1 bwa bowtie bowtie2 \
               freebayes fastqc-0.10.1 gatk r-base \
               tophat openjdk-6-jre samtools unzip lftp cufflinks wigtools \
               python-pip python-dev python-setuptools python-nose \
