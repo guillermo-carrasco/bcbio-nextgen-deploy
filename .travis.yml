@@ -3,15 +3,6 @@ language: python
 python:
     - 2.7
 
-before_install:
-    #Clean up some space (using aptitude instead of apt-get to remove software, as it is less strict when removing software - 
-    #doesn't crash if doesn't find the package that wants to remove)
-    - sudo apt-get clean
-    - sudo apt-get install -q -y aptitude
-    - sudo aptitude purge -q -y ruby mysql-common mysql-client mysql-server emacs python2.5 python2.6 python3.1 python3.2 postgresql-common postgresql-client postgresql-server-dev-all sqlite3 mongodb-10gen redis-server elasticsearch erlang-base libcairo2 libcairo2-dev xserver-xorg-core x11-utils x11-common
-    - sudo apt-get autoremove
-    - sudo rm -rf /usr/share/doc
-
 install:
     - sudo apt-get update
     - sudo apt-get install -q -y python-software-properties
@@ -22,6 +13,8 @@ install:
     #Download snpeff gnome database
     - lftp -e 'pget -n 8 http://downloads.sourceforge.net/project/snpeff/databases/v2_0_5/snpEff_v2_0_5_GRCh37.63.zip; quit'
     - sudo unzip snpEff_v2_0_5_GRCh37.63.zip -d /usr/share/snpEff/ && rm snpEff_v2_0_5_GRCh37.63.zip
+    #Temporal solution to travis issue #155
+    - sudo rm -rf /dev/shm && sudo ln -s /run/shm /dev/shm
     - python deploy_non_root.py install
 
 notifications:

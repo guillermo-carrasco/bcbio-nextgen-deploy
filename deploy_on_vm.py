@@ -32,8 +32,8 @@ def _install_VM():
 
     #Error handling, just in case that already exists a vagrant box with the same name
     with settings(warn_only=True):
-        result = local("vagrant box add precise32 http://files.vagrantup.com/precise32.box", capture=True)
-    if result.failed and not confirm("It looks like already exists a vagrant box with the name \"precise32\" on your system, do you want to continue using this box? (y/n)"):
+        result = local("vagrant box add precise64 http://files.vagrantup.com/precise32.box", capture=True)
+    if result.failed and not confirm("It looks like already exists a vagrant box with the name \"precise64\" on your system, do you want to continue using this box? (y/n)"):
         abort("Aborting at user request")
     local("vagrant up")
 
@@ -48,7 +48,7 @@ def _provision_VM():
     sudo('add-apt-repository -y ppa:debian-med/ppa')
     sudo('apt-get update')
     #Install pipeline dependencies
-    sudo('apt-get install -y snpeff-2 picard-tools bwa bowtie bowtie2 \
+    sudo('apt-get install -y snpeff-2 libsam-java=1.74-1ubuntu1 picard-tools=1.74-1ubuntu1 bwa bowtie bowtie2 \
               freebayes fastqc-0.10.1 gatk r-base \
               tophat openjdk-6-jre samtools unzip lftp cufflinks wigtools \
               python-pip python-dev python-setuptools python-nose \
@@ -59,8 +59,8 @@ def _provision_VM():
 
 def install():
     if not env.hosts:
-        env.hosts = ['vagrant@127.0.0.1:1234']
         print "Creating virtual machine..."
+        env.hosts = ['127.0.0.1:1234']
         _install_VM()
     print "Installing the pipeline in: " + str(env.host)
     print "Provisioning Virtual Machine with software dependencies..."
