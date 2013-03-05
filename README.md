@@ -48,7 +48,18 @@ If you don't want to run the test suite after the installation, you can specify 
 ### Uninstall
 
 To *completely* uninstall the pipeline and all its configuration files/directories execute:
+
             python deploy_non_root.py uninstall
+
+### Update an existing installation
+To update an existing installation, use the update option:
+
+            python deploy_non_root.py update
+
+By default, the script looks for the installation in ~/opt/bcbb. You can specify another installation directory
+if this is your case:
+
+            python deploy_non_root.py -d <installation_directory> update
 
 
 ## Local installation within a virtual machine
