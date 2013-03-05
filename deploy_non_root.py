@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import os
 import shutil
@@ -18,13 +18,6 @@ def _setUp(function, args):
     """Set up the environment to correctly install the pipeline depending on 
     where the script is executed.
     """
-    #Do not change anything if the option is update
-    if function == 'update':
-        directory = args.directory if args.directory else '~/opt/bcbb'
-        if not os.path.exists(directory):
-            raise IOError("The directory %s does not exist. Please specify a correct installation directory." % directory)
-        eval(function)(directory)
-
     #Work with a copy of the current environment and tune it
     env = dict(os.environ)
     env['PATH'] = ':'.join([env['PATH'], pjoin(env['HOME'], 'opt/mypython/bin')])
@@ -322,4 +315,11 @@ if __name__ == '__main__':
     parser.add_argument('--no-tests', action = 'store_true', help = "If set, the test suite is not run")
 
     args = parser.parse_args()
-    _setUp(args.command, args)
+    #If update, doesn't need to set up
+    if args.command == 'update':
+        directory = args.directory if args.directory else pjoin(os.environ['HOME'], 'opt/bcbb')
+        if not os.path.exists(directory):
+            raise IOError("The directory %s does not exist. Please specify a correct installation directory." % directory)
+        update(directory)
+    else:
+        _setUp(args.command, args)

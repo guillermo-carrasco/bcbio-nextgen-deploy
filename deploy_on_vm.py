@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 """
 The aim of this script is to perform a deployment of the bcbb-nextgen pipeline within a fresh virtual machine.
