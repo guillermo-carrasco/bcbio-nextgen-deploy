@@ -13,7 +13,7 @@ samtools/0.1.12-10
 bwa/0.6.2
 maq/0.7.1
 mosaik-aligner/1.0.1388
-python/2.6.6
+python/2.7
 CASAVA/1.7.0
 #picard/1.41
 #GATK/1.4.21

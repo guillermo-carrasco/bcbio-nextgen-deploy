@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import os
 import shutil
@@ -15,10 +15,8 @@ from subprocess import Popen
 
 
 def _setUp(function, args):
-    """
-    Set up the environment to correctly install the pipeline depending on where the script
-    is executed. Also set up te loggin system. 
-    is executed. Also set up te log handler.
+    """Set up the environment to correctly install the pipeline depending on 
+    where the script is executed.
     """
     #Work with a copy of the current environment and tune it
     env = dict(os.environ)
@@ -59,6 +57,20 @@ def _setUp(function, args):
         eval(function)(env, config_lines, version, tests)
     else:
         eval(function)(env, config_lines)
+
+
+def update(directory):
+    """Update the code of an existing pipeline installation
+    """
+    pull_and_install = """
+        source ~/.bashrc &&
+        workon master &&
+        cd {workingdir} &&
+        git pull origin master &&
+        cd nextgen &&
+        python setup.py install
+    """.format(workingdir=directory)
+    check_call(pull_and_install, shell=True)
 
 
 def install(env, config_lines, version, tests):
@@ -296,9 +308,18 @@ if __name__ == '__main__':
     sp = parser.add_subparsers(dest = 'command')
     sp.add_parser('install', help = "Install the pipeline within a python virtual environment (also created with this command)")
     sp.add_parser('uninstall', help = "Removes the pipeline and unisntall the created virtual environment (master)")
+    sp.add_parser('update', help = "Update the code of an existing installation")
     #Optional arguments
     parser.add_argument('-v', '--version', help = "Choose a version of the pipeline to pull. Use a commit hash as version")
+    parser.add_argument('-d', '--directory', help = "Directory of the pipeline installation (~/opt/bcbb by default)")
     parser.add_argument('--no-tests', action = 'store_true', help = "If set, the test suite is not run")
 
     args = parser.parse_args()
-    _setUp(args.command, args)
+    #If update, doesn't need to set up
+    if args.command == 'update':
+        directory = args.directory if args.directory else pjoin(os.environ['HOME'], 'opt/bcbb')
+        if not os.path.exists(directory):
+            raise IOError("The directory %s does not exist. Please specify a correct installation directory." % directory)
+        update(directory)
+    else:
+        _setUp(args.command, args)
