@@ -14,6 +14,7 @@ from fabric.operations import sudo
 #Define the vagrant host
 env.user = 'vagrant'
 env.password = 'vagrant'
+env.hosts = ['127.0.0.1:1234']
 codedir = '/home/vagrant/bcbio-nextgen-deploy'
 
 def _install_pipeline():
@@ -32,7 +33,7 @@ def _install_VM():
 
     #Error handling, just in case that already exists a vagrant box with the same name
     with settings(warn_only=True):
-        result = local("vagrant box add precise64 http://files.vagrantup.com/precise32.box", capture=True)
+        result = local("vagrant box add precise64 http://files.vagrantup.com/precise64.box", capture=True)
     if result.failed and not confirm("It looks like already exists a vagrant box with the name \"precise64\" on your system, do you want to continue using this box? (y/n)"):
         abort("Aborting at user request")
     local("vagrant up")
@@ -52,16 +53,14 @@ def _provision_VM():
               freebayes fastqc-0.10.1 gatk r-base \
               tophat openjdk-6-jre samtools unzip lftp cufflinks wigtools \
               python-pip python-dev python-setuptools python-nose \
-              python-yaml git')
+              python-yaml git curl')
     run('lftp -e \'pget -n 8 http://downloads.sourceforge.net/project/snpeff/databases/v2_0_5/snpEff_v2_0_5_GRCh37.63.zip; quit\'')
     sudo('unzip snpEff_v2_0_5_GRCh37.63.zip -d /usr/share/snpEff/ && rm snpEff_v2_0_5_GRCh37.63.zip')
 
 
 def install():
-    if not env.hosts:
-        print "Creating virtual machine..."
-        env.hosts = ['127.0.0.1:1234']
-        _install_VM()
+    print "Creating virtual machine..."
+    _install_VM()
     print "Installing the pipeline in: " + str(env.host)
     print "Provisioning Virtual Machine with software dependencies..."
     _provision_VM()
